@@ -1536,10 +1536,6 @@ export type ProviderConfig = {
      */
     enterpriseUrl?: string
     /**
-     * Set the OpenAI Responses store flag for this provider
-     */
-    store?: boolean
-    /**
      * Enable promptCacheKey for this provider (default false)
      */
     setCacheKey?: boolean
