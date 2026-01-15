@@ -2,13 +2,14 @@ import path from "path"
 import fs from "fs/promises"
 import matter from "gray-matter"
 import z from "zod"
-import { fileURLToPath } from "url"
 import { Instance } from "../project/instance"
 import { NamedError } from "@opencode-ai/util/error"
 import { ConfigMarkdown } from "../config/markdown"
 import { Log } from "../util/log"
 import { Global } from "@/global"
 import { Filesystem } from "@/util/filesystem"
+import { Bus } from "@/bus"
+import { Session } from "@/session"
 
 export namespace Skill {
   const log = Log.create({ service: "skill" })
@@ -44,63 +45,64 @@ export namespace Skill {
     const bundledSkillLocations = new Set<string>()
 
     const addSkill = async (match: string, isBundled = false) => {
-      try {
-        const md = await ConfigMarkdown.parse(match)
-        if (!md) {
-          log.warn("failed to parse markdown for skill", { path: match })
-          return
-        }
+      const md = await ConfigMarkdown.parse(match).catch((err) => {
+        const message = ConfigMarkdown.FrontmatterError.isInstance(err)
+          ? `${err.data.path}: ${err.data.message}`
+          : `Failed to parse skill ${match}`
+        Bus.publish(Session.Event.Error, { error: new NamedError.Unknown({ message }).toObject() })
+        log.error("failed to load skill", { skill: match, err })
+        return undefined
+      })
 
-        const parsed = Info.pick({ name: true, description: true }).safeParse(md.data)
-        if (!parsed.success) {
-          log.warn("failed to parse skill metadata", {
-            path: match,
-            issues: parsed.error.issues,
-            data: md.data,
-            isBundled,
-          })
-          return
-        }
+      if (!md) return
 
-        // Special logging for g6-parser to debug loading issues
-        if (parsed.data.name === "g6-parser") {
-          log.info("loading g6-parser skill", {
-            path: match,
-            isBundled,
-            location: match,
-            description: parsed.data.description,
-          })
-        }
-
-        // Prevent overriding bundled skills from project-level skills
-        if (skills[parsed.data.name]) {
-          if (bundledSkillLocations.has(skills[parsed.data.name].location)) {
-            log.warn("skipping project-level skill, bundled skill already exists", {
-              name: parsed.data.name,
-              bundled: skills[parsed.data.name].location,
-              project: match,
-            })
-            return
-          }
-          log.warn("duplicate skill name, overriding", {
-            name: parsed.data.name,
-            existing: skills[parsed.data.name].location,
-            duplicate: match,
-          })
-        }
-
-        skills[parsed.data.name] = {
-          name: parsed.data.name,
-          description: parsed.data.description,
-          location: match,
-        }
-        if (isBundled) {
-          bundledSkillLocations.add(match)
-        }
-        log.info("loaded skill", { name: parsed.data.name, location: match, bundled: isBundled })
-      } catch (error) {
-        log.error("error loading skill", { path: match, error, isBundled })
+      const parsed = Info.pick({ name: true, description: true }).safeParse(md.data)
+      if (!parsed.success) {
+        log.warn("failed to parse skill metadata", {
+          path: match,
+          issues: parsed.error.issues,
+          data: md.data,
+          isBundled,
+        })
+        return
       }
+
+      // Special logging for g6-parser to debug loading issues
+      if (parsed.data.name === "g6-parser") {
+        log.info("loading g6-parser skill", {
+          path: match,
+          isBundled,
+          location: match,
+          description: parsed.data.description,
+        })
+      }
+
+      // Prevent overriding bundled skills from project-level skills
+      if (skills[parsed.data.name]) {
+        if (bundledSkillLocations.has(skills[parsed.data.name].location)) {
+          log.warn("skipping project-level skill, bundled skill already exists", {
+            name: parsed.data.name,
+            bundled: skills[parsed.data.name].location,
+            project: match,
+          })
+          return
+        }
+        log.warn("duplicate skill name, overriding", {
+          name: parsed.data.name,
+          existing: skills[parsed.data.name].location,
+          duplicate: match,
+        })
+      }
+
+      skills[parsed.data.name] = {
+        name: parsed.data.name,
+        description: parsed.data.description,
+        location: match,
+      }
+      if (isBundled) {
+        bundledSkillLocations.add(match)
+      }
+      log.info("loaded skill", { name: parsed.data.name, location: match, bundled: isBundled })
     }
 
     // Scan bundled skills from global directory ~/.opencode/skills/
