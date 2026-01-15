@@ -1495,6 +1495,7 @@ export type ProviderConfig = {
       }
       limit?: {
         context: number
+        input?: number
         output: number
       }
       modalities?: {
@@ -2043,6 +2044,7 @@ export type Model = {
   }
   limit: {
     context: number
+    input?: number
     output: number
   }
   status: "alpha" | "beta" | "deprecated" | "active"
@@ -3999,6 +4001,7 @@ export type ProviderListResponses = {
           }
           limit: {
             context: number
+            input?: number
             output: number
           }
           modalities?: {

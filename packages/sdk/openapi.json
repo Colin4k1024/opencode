@@ -3696,6 +3696,9 @@
                                     "context": {
                                       "type": "number"
                                     },
+                                    "input": {
+                                      "type": "number"
+                                    },
                                     "output": {
                                       "type": "number"
                                     }
@@ -9099,6 +9102,9 @@
                     "context": {
                       "type": "number"
                     },
+                    "input": {
+                      "type": "number"
+                    },
                     "output": {
                       "type": "number"
                     }
@@ -10307,6 +10313,9 @@
             "type": "object",
             "properties": {
               "context": {
+                "type": "number"
+              },
+              "input": {
                 "type": "number"
               },
               "output": {
