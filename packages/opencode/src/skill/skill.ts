@@ -47,7 +47,7 @@ export namespace Skill {
     const addSkill = async (match: string, isBundled = false) => {
       const md = await ConfigMarkdown.parse(match).catch((err) => {
         const message = ConfigMarkdown.FrontmatterError.isInstance(err)
-          ? `${err.data.path}: ${err.data.message}`
+          ? err.data.message
           : `Failed to parse skill ${match}`
         Bus.publish(Session.Event.Error, { error: new NamedError.Unknown({ message }).toObject() })
         log.error("failed to load skill", { skill: match, err })
