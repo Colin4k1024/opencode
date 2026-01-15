@@ -81,29 +81,12 @@ export namespace ModelsDev {
     const result = await file.json().catch(() => {})
     if (result) return result as Record<string, Provider>
 
-    // If cache file doesn't exist, try to refresh it first
-    // But don't fail if network is unavailable (e.g., during build)
-    try {
-      await refresh()
-      const refreshed = await file.json().catch(() => {})
-      if (refreshed) return refreshed as Record<string, Provider>
-    } catch (e) {
-      // Network error during build is acceptable, continue to fallback
-      log.warn("Failed to refresh models data", { error: e })
-    }
-
-    // Fallback: try to use macro data if available (for build time)
-    try {
+    if (typeof data === "function") {
       const json = await data()
-      if (json && json !== "{}") {
-        return JSON.parse(json) as Record<string, Provider>
-      }
-    } catch (e) {
-      // If macro also fails (e.g., network unavailable during build), return empty object
-      log.warn("Failed to get models data from macro", { error: e })
+      return JSON.parse(json) as Record<string, Provider>
     }
-    // Return empty object as final fallback
-    return {} as Record<string, Provider>
+    const json = await fetch("https://models.dev/api.json").then((x) => x.text())
+    return JSON.parse(json) as Record<string, Provider>
   }
 
   export async function refresh() {
