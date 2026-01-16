@@ -344,7 +344,12 @@ export const OrchestrateTool = Tool.define("orchestrate", {
     const outputParts: string[] = []
     const startTime = Date.now()
 
-    // Send initial metadata
+    // Send initial metadata with output preview
+    outputParts.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
+    outputParts.push(`🚀 [开始] 工作流 "${workflow.name}" 执行\n`)
+    outputParts.push(`   总步骤数: ${totalSteps}\n`)
+    outputParts.push(`   开始时间: ${new Date(startTime).toLocaleTimeString()}\n`)
+    outputParts.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`)
     ctx.metadata({
       title: `Starting workflow: ${workflow.name}`,
       metadata: {
@@ -352,10 +357,10 @@ export const OrchestrateTool = Tool.define("orchestrate", {
         totalSteps,
         status: "starting",
         startTime,
+        currentOutput: outputParts.join(""),
+        progress: 0,
       },
     })
-
-    outputParts.push(`[开始] 工作流 "${workflow.name}" 执行 (共 ${totalSteps} 个步骤)\n\n`)
 
     let currentStepId: string | null = workflow.steps[0]?.id || null
     const executedSteps: string[] = []
@@ -376,7 +381,12 @@ export const OrchestrateTool = Tool.define("orchestrate", {
       const stepStartTime = Date.now()
 
       // Output step start information
-      outputParts.push(`[步骤 ${stepIndex}/${totalSteps}] 开始执行: ${step.id} (@${step.agent})\n`)
+      outputParts.push(`\n${"─".repeat(60)}\n`)
+      outputParts.push(`📋 [步骤 ${stepIndex}/${totalSteps}] 开始执行\n`)
+      outputParts.push(`   步骤ID: ${step.id}\n`)
+      outputParts.push(`   执行Agent: @${step.agent}\n`)
+      outputParts.push(`   开始时间: ${new Date(stepStartTime).toLocaleTimeString()}\n`)
+      outputParts.push(`${"─".repeat(60)}\n`)
       ctx.metadata({
         title: `Executing ${workflow.name} - Step ${stepIndex}/${totalSteps}: ${step.id}`,
         metadata: {
@@ -386,7 +396,9 @@ export const OrchestrateTool = Tool.define("orchestrate", {
           totalSteps,
           status: "executing",
           agent: step.agent,
-          progress: Math.round((stepIndex / totalSteps) * 100),
+          progress: Math.round(((stepIndex - 1) / totalSteps) * 100),
+          currentOutput: outputParts.join(""),
+          executedSteps: executedSteps.length,
         },
       })
 
@@ -398,38 +410,91 @@ export const OrchestrateTool = Tool.define("orchestrate", {
       const statusText = result.success ? "Success" : "Failed"
 
       // Output step completion information
-      outputParts.push(`[步骤 ${stepIndex}/${totalSteps}] 完成: ${step.id} - ${statusIcon} ${statusText} (耗时: ${stepDuration}ms)\n`)
+      const durationSeconds = (stepDuration / 1000).toFixed(2)
+      outputParts.push(`\n${statusIcon} [步骤 ${stepIndex}/${totalSteps}] 完成: ${step.id}\n`)
+      outputParts.push(`   状态: ${statusText}\n`)
+      outputParts.push(`   耗时: ${durationSeconds}秒 (${stepDuration}ms)\n`)
+      outputParts.push(`   完成时间: ${new Date(Date.now()).toLocaleTimeString()}\n`)
 
       // Add tool calls summary
       if (result.toolCalls && result.toolCalls.length > 0) {
-        outputParts.push(`  工具调用 (${result.toolCalls.length}):\n`)
+        outputParts.push(`\n   🔧 工具调用 (共 ${result.toolCalls.length} 个):\n`)
         for (const toolCall of result.toolCalls.slice(0, 5)) {
           // Limit to first 5 tool calls to avoid too much output
-          const statusIcon = toolCall.status === "completed" ? "✓" : toolCall.status === "running" ? "⏳" : "✗"
-          outputParts.push(`    - ${statusIcon} ${toolCall.tool}${toolCall.title ? `: ${toolCall.title}` : ""}\n`)
+          const toolStatusIcon = toolCall.status === "completed" ? "✓" : toolCall.status === "running" ? "⏳" : "✗"
+          outputParts.push(`      ${toolStatusIcon} ${toolCall.tool}${toolCall.title ? `: ${toolCall.title}` : ""}\n`)
         }
         if (result.toolCalls.length > 5) {
-          outputParts.push(`    ... 还有 ${result.toolCalls.length - 5} 个工具调用\n`)
+          outputParts.push(`      ... 还有 ${result.toolCalls.length - 5} 个工具调用\n`)
         }
       }
 
       // Add file changes summary
       if (result.fileChanges && result.fileChanges.length > 0) {
-        outputParts.push(`  文件修改:\n`)
+        outputParts.push(`\n   📝 文件修改:\n`)
         for (const change of result.fileChanges) {
-          outputParts.push(`    - ${change.files.join(", ")}\n`)
+          outputParts.push(`      - ${change.files.join(", ")}\n`)
         }
       }
 
       // Add session link
       if (result.sessionID) {
-        outputParts.push(`  [查看详情: session/${result.sessionID}](#session/${result.sessionID})\n`)
+        outputParts.push(`\n   🔗 [查看步骤详情: session/${result.sessionID}](#session/${result.sessionID})\n`)
       }
 
-      outputParts.push("\n") // Empty line between steps
+      // Send metadata update with step completion details
+      ctx.metadata({
+        title: `Completed ${workflow.name} - Step ${stepIndex}/${totalSteps}: ${step.id}`,
+        metadata: {
+          workflow: workflow.name,
+          currentStep: step.id,
+          stepIndex,
+          totalSteps,
+          status: result.success ? "completed" : "failed",
+          agent: step.agent,
+          progress: Math.round((stepIndex / totalSteps) * 100),
+          currentOutput: outputParts.join(""),
+          executedSteps: executedSteps.length,
+          stepDetails: {
+            success: result.success,
+            skipped: result.skipped || false,
+            toolCalls: result.toolCalls?.length || 0,
+            fileChanges: result.fileChanges?.length || 0,
+            duration: stepDuration,
+            sessionID: result.sessionID,
+          },
+        },
+      })
 
       // Handle skipped steps (condition not met)
       if (result.skipped) {
+        // Output skipped step information
+        outputParts.push(`\n${"─".repeat(60)}\n`)
+        outputParts.push(`⏭  [步骤 ${stepIndex}/${totalSteps}] 跳过: ${step.id}\n`)
+        outputParts.push(`   原因: ${result.output}\n`)
+        outputParts.push(`   条件: ${step.condition?.type || "unknown"}\n`)
+        outputParts.push(`${"─".repeat(60)}\n`)
+
+        // Send metadata update for skipped step
+        ctx.metadata({
+          title: `Skipped ${workflow.name} - Step ${stepIndex}/${totalSteps}: ${step.id}`,
+          metadata: {
+            workflow: workflow.name,
+            currentStep: step.id,
+            stepIndex,
+            totalSteps,
+            status: "skipped",
+            agent: step.agent,
+            progress: Math.round((stepIndex / totalSteps) * 100),
+            currentOutput: outputParts.join(""),
+            executedSteps: executedSteps.length,
+            stepDetails: {
+              skipped: true,
+              reason: result.output,
+            },
+          },
+        })
+
         // If step was skipped, continue to next step (or on_success if specified)
         if (step.on_success === null) {
           currentStepId = null
@@ -487,81 +552,98 @@ export const OrchestrateTool = Tool.define("orchestrate", {
 
     // Add final summary
     const totalDuration = Date.now() - startTime
+    const totalDurationSeconds = (totalDuration / 1000).toFixed(2)
     const allSuccess = Array.from(stepResults.values()).every((r) => r.success)
     const successCount = Array.from(stepResults.values()).filter((r) => r.success).length
     const skippedCount = Array.from(stepResults.values()).filter((r) => r.skipped).length
     const failedCount = Array.from(stepResults.values()).filter((r) => !r.success && !r.skipped).length
 
-    outputParts.push(`[完成] 工作流执行完成 (总耗时: ${totalDuration}ms)\n`)
-    outputParts.push(`  成功: ${successCount}/${totalSteps} 步骤\n`)
+    outputParts.push(`\n${"━".repeat(60)}\n`)
+    outputParts.push(`${allSuccess ? "✅" : "⚠️"} [完成] 工作流执行完成\n`)
+    outputParts.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
+    outputParts.push(`   总耗时: ${totalDurationSeconds}秒 (${totalDuration}ms)\n`)
+    outputParts.push(`   执行步骤: ${executedSteps.length}/${totalSteps}\n`)
+    outputParts.push(`   ✓ 成功: ${successCount} 步骤\n`)
     if (skippedCount > 0) {
-      outputParts.push(`  跳过: ${skippedCount} 步骤\n`)
+      outputParts.push(`   ⏭ 跳过: ${skippedCount} 步骤\n`)
     }
     if (failedCount > 0) {
-      outputParts.push(`  失败: ${failedCount} 步骤\n`)
+      outputParts.push(`   ✗ 失败: ${failedCount} 步骤\n`)
     }
-    outputParts.push(`\n状态: ${allSuccess ? "✓ 全部成功" : "✗ 部分失败"}\n`)
+    outputParts.push(`   最终状态: ${allSuccess ? "✅ 全部成功" : "⚠️ 部分失败"}\n`)
+    outputParts.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
 
     // Build detailed summary for final output
-    outputParts.push(`\n## 详细摘要\n\n`)
+    outputParts.push(`\n\n${"═".repeat(60)}\n`)
+    outputParts.push(`📊 详细摘要\n`)
+    outputParts.push(`${"═".repeat(60)}\n\n`)
 
     for (const step of workflow.steps) {
       const result = stepResults.get(step.id)
       if (!result) {
-        outputParts.push(`### Step: ${step.id} (${step.agent})\n状态: ⚠ 未执行\n\n`)
+        outputParts.push(`\n${"─".repeat(60)}\n`)
+        outputParts.push(`⚠️  Step: ${step.id} (@${step.agent})\n`)
+        outputParts.push(`   状态: ⚠ 未执行\n`)
+        outputParts.push(`${"─".repeat(60)}\n`)
         continue
       }
 
       if (result.skipped) {
-        outputParts.push(`### Step: ${step.id} (${step.agent})\n状态: ⏭ 跳过 (条件未满足)\n原因: ${result.output}\n\n`)
+        outputParts.push(`\n${"─".repeat(60)}\n`)
+        outputParts.push(`⏭  Step: ${step.id} (@${step.agent})\n`)
+        outputParts.push(`   状态: ⏭ 跳过 (条件未满足)\n`)
+        outputParts.push(`   原因: ${result.output}\n`)
+        outputParts.push(`${"─".repeat(60)}\n`)
         continue
       }
 
       const statusIcon = result.success ? "✓" : "✗"
       const statusText = result.success ? "成功" : "失败"
-      outputParts.push(`### Step: ${step.id} (${step.agent})\n状态: ${statusIcon} ${statusText}\n`)
+      outputParts.push(`\n${"─".repeat(60)}\n`)
+      outputParts.push(`${statusIcon}  Step: ${step.id} (@${step.agent})\n`)
+      outputParts.push(`   状态: ${statusText}\n`)
 
       // Add tool calls information
       if (result.toolCalls && result.toolCalls.length > 0) {
-        outputParts.push(`\n工具调用 (${result.toolCalls.length}):\n`)
+        outputParts.push(`\n   🔧 工具调用 (${result.toolCalls.length}):\n`)
         for (const toolCall of result.toolCalls) {
-          const statusIcon = toolCall.status === "completed" ? "✓" : toolCall.status === "running" ? "⏳" : "✗"
-          outputParts.push(`  - ${statusIcon} ${toolCall.tool}${toolCall.title ? `: ${toolCall.title}` : ""}\n`)
+          const toolStatusIcon = toolCall.status === "completed" ? "✓" : toolCall.status === "running" ? "⏳" : "✗"
+          outputParts.push(`      ${toolStatusIcon} ${toolCall.tool}${toolCall.title ? `: ${toolCall.title}` : ""}\n`)
           if (toolCall.output && toolCall.output.length > 0) {
             const preview = toolCall.output.length > 200 ? toolCall.output.substring(0, 200) + "..." : toolCall.output
-            outputParts.push(`    输出: ${preview.replace(/\n/g, " ")}\n`)
+            outputParts.push(`         输出: ${preview.replace(/\n/g, " ")}\n`)
           }
         }
       }
 
       // Add file changes information
       if (result.fileChanges && result.fileChanges.length > 0) {
-        outputParts.push(`\n文件修改:\n`)
+        outputParts.push(`\n   📝 文件修改:\n`)
         for (const change of result.fileChanges) {
-          outputParts.push(`  - 修改: ${change.files.join(", ")}\n`)
+          outputParts.push(`      - ${change.files.join(", ")}\n`)
         }
       }
 
       // Add output text
       if (result.outputText && result.outputText.trim().length > 0) {
         const outputPreview = result.outputText.length > 300 ? result.outputText.substring(0, 300) + "..." : result.outputText
-        outputParts.push(`\n输出:\n${outputPreview}\n`)
+        outputParts.push(`\n   📄 输出:\n      ${outputPreview.replace(/\n/g, "\n      ")}\n`)
       } else if (result.output && result.output.trim().length > 0) {
         const outputPreview = result.output.length > 300 ? result.output.substring(0, 300) + "..." : result.output
-        outputParts.push(`\n输出:\n${outputPreview}\n`)
+        outputParts.push(`\n   📄 输出:\n      ${outputPreview.replace(/\n/g, "\n      ")}\n`)
       }
 
       // Add session link
       if (result.sessionID) {
-        outputParts.push(`\n[查看步骤详情: session/${result.sessionID}](#session/${result.sessionID})\n`)
+        outputParts.push(`\n   🔗 [查看步骤详情: session/${result.sessionID}](#session/${result.sessionID})\n`)
       }
 
-      outputParts.push("\n") // Empty line between steps
+      outputParts.push(`${"─".repeat(60)}\n`)
     }
 
     const output = outputParts.join("")
 
-    // Send final metadata
+    // Send final metadata with complete output
     ctx.metadata({
       title: `Completed workflow: ${workflow.name}`,
       metadata: {
@@ -573,6 +655,9 @@ export const OrchestrateTool = Tool.define("orchestrate", {
         failedCount,
         totalDuration,
         progress: 100,
+        currentOutput: output,
+        executedSteps: executedSteps.length,
+        completedAt: Date.now(),
       },
     })
 

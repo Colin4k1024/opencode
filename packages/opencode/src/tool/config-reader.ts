@@ -164,10 +164,13 @@ async function parseConfigFile(filePath: string): Promise<any> {
   if (ext === ".toml" || filePath.endsWith(".toml")) {
     // TOML - try to parse if toml package is available
     try {
-      const toml = await import("toml")
-      return toml.parse(content)
-    } catch {
+      // Dynamically import the toml package if available
+      // @ts-expect-error: May not have types if toml is not installed
+      const toml = await import("toml");
+      return toml.parse(content);
+    } catch (e) {
       // Fallback to raw content
+      // If desired, log the error for diagnosis: console.warn("TOML parse failed:", e);
       return {
         _type: "toml",
         _content: content,
