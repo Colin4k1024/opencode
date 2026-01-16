@@ -604,7 +604,7 @@ export namespace SessionPrompt {
           ...(await SystemPrompt.custom()),
         ],
         messages: [
-          ...MessageV2.toModelMessage(sessionMessages),
+          ...MessageV2.toModelMessage(sessionMessages, { tools }),
           ...(isLastStep
             ? [
                 {
@@ -723,10 +723,18 @@ export namespace SessionPrompt {
           )
           return result
         },
-        toModelOutput(result) {
+        toModelOutput(result: { output: string; attachments?: MessageV2.FilePart[] }) {
+          if (!result.attachments?.length) return { type: "text", value: result.output }
           return {
-            type: "text",
-            value: result.output,
+            type: "content",
+            value: [
+              { type: "text", text: result.output },
+              ...result.attachments.map((a) => ({
+                type: "media" as const,
+                data: a.url.slice(a.url.indexOf(",") + 1),
+                mediaType: a.mime,
+              })),
+            ],
           }
         },
       })
@@ -813,10 +821,18 @@ export namespace SessionPrompt {
           content: result.content, // directly return content to preserve ordering when outputting to model
         }
       }
-      item.toModelOutput = (result) => {
+      item.toModelOutput = (result: { output: string; attachments?: MessageV2.FilePart[] }) => {
+        if (!result.attachments?.length) return { type: "text", value: result.output }
         return {
-          type: "text",
-          value: result.output,
+          type: "content",
+          value: [
+            { type: "text", text: result.output },
+            ...result.attachments.map((a) => ({
+              type: "media" as const,
+              data: a.url.slice(a.url.indexOf(",") + 1),
+              mediaType: a.mime,
+            })),
+          ],
         }
       }
       tools[key] = item
