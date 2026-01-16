@@ -182,6 +182,7 @@ async function parseConfigFile(filePath: string): Promise<any> {
   if (ext === ".yaml" || ext === ".yml" || filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
     // YAML - try to parse if js-yaml package is available
     try {
+      // @ts-ignore - optional dependency
       const yaml = await import("js-yaml")
       return yaml.load(content)
     } catch {

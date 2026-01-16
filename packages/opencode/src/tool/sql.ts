@@ -327,6 +327,7 @@ async function parseSpringBootConfig(content: string, ext: string): Promise<Data
   try {
     if (ext === ".yml" || ext === ".yaml") {
       // Parse YAML
+      // @ts-ignore - optional dependency
       const yaml = await import("js-yaml")
       const config = yaml.load(content) as any
 
@@ -389,6 +390,7 @@ async function executeQuery(config: DatabaseConfig, query: string, params?: any[
 
   try {
     if (type === "mysql") {
+      // @ts-ignore - optional dependency
       const mysql = await import("mysql2/promise")
       const connection = await mysql.createConnection({
         host: config.host || "localhost",
@@ -406,6 +408,7 @@ async function executeQuery(config: DatabaseConfig, query: string, params?: any[
     }
 
     if (type === "postgresql") {
+      // @ts-ignore - optional dependency
       const { Client } = await import("pg")
       const client = new Client({
         host: config.host || "localhost",
@@ -424,6 +427,7 @@ async function executeQuery(config: DatabaseConfig, query: string, params?: any[
     }
 
     if (type === "sqlite") {
+      // @ts-ignore - optional dependency
       const Database = (await import("better-sqlite3")).default
       const dbPath = config.file || config.connectionString
       if (!dbPath) {
