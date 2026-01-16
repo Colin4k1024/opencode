@@ -76,12 +76,24 @@ export namespace ModelsDev {
   export type Provider = z.infer<typeof Provider>
 
   export async function get() {
-    refresh()
     const file = Bun.file(filepath)
     const result = await file.json().catch(() => {})
     if (result) return result as Record<string, Provider>
-    const json = await data()
-    return JSON.parse(json) as Record<string, Provider>
+    
+    // If cache file doesn't exist, refresh it first
+    await refresh()
+    const refreshed = await file.json().catch(() => {})
+    if (refreshed) return refreshed as Record<string, Provider>
+    
+    // Fallback: try to use macro data if available (for build time)
+    try {
+      const json = await data()
+      return JSON.parse(json) as Record<string, Provider>
+    } catch (e) {
+      log.error("Failed to get models data", { error: e })
+      // Return empty object as fallback
+      return {} as Record<string, Provider>
+    }
   }
 
   export async function refresh() {

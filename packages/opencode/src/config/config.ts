@@ -505,6 +505,8 @@ export namespace Config {
           codesearch: PermissionAction.optional(),
           lsp: PermissionRule.optional(),
           doom_loop: PermissionAction.optional(),
+          sql: PermissionRule.optional(),
+          config_reader: PermissionRule.optional(),
         })
         .catchall(PermissionRule)
         .or(PermissionAction),

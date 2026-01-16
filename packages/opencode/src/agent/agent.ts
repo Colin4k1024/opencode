@@ -11,6 +11,8 @@ import PROMPT_COMPACTION from "./prompt/compaction.txt"
 import PROMPT_EXPLORE from "./prompt/explore.txt"
 import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
+import PROMPT_FIX from "./prompt/fix.txt"
+import PROMPT_DEEPAGENT from "./prompt/deepagent.txt"
 import { PermissionNext } from "@/permission/next"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@/global"
@@ -191,6 +193,50 @@ export namespace Agent {
           user,
         ),
         prompt: PROMPT_SUMMARY,
+      },
+      fix: {
+        name: "fix",
+        description: `Specialized agent for analyzing and fixing code errors, compilation issues, and runtime problems. Use this agent when you encounter errors that need investigation and repair.`,
+        mode: "primary",
+        options: {},
+        native: true,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            question: "allow",
+            sql: "allow",
+            config_reader: "allow",
+            read: "allow",
+            edit: "allow",
+            bash: "allow",
+            grep: "allow",
+            glob: "allow",
+            list: "allow",
+          }),
+          user,
+        ),
+        prompt: PROMPT_FIX,
+      },
+      deepagent: {
+        name: "deepagent",
+        description: `Orchestrator agent for coordinating multiple agents in sequential workflows. Use this agent when you need to execute a sequence of agents (e.g., fix -> test -> git commit) with conditional logic and error handling.`,
+        mode: "all",
+        options: {},
+        native: true,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            question: "allow",
+            orchestrate: "allow",
+            task: "allow",
+            read: "allow",
+            bash: "allow",
+            glob: "allow",
+            list: "allow",
+          }),
+          user,
+        ),
+        prompt: PROMPT_DEEPAGENT,
       },
     }
 

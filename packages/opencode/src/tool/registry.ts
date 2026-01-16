@@ -11,6 +11,7 @@ import { WebFetchTool } from "./webfetch"
 import { WriteTool } from "./write"
 import { InvalidTool } from "./invalid"
 import { SkillTool } from "./skill"
+import { OrchestrateTool } from "./orchestrate"
 import type { Agent } from "../agent/agent"
 import { Tool } from "./tool"
 import { Instance } from "../project/instance"
@@ -26,6 +27,8 @@ import { Log } from "@/util/log"
 import { LspTool } from "./lsp"
 import { Truncate } from "./truncation"
 import { PlanExitTool, PlanEnterTool } from "./plan"
+import { SqlTool } from "./sql"
+import { ConfigReaderTool } from "./config-reader"
 
 export namespace ToolRegistry {
   const log = Log.create({ service: "tool.registry" })
@@ -102,6 +105,7 @@ export namespace ToolRegistry {
       EditTool,
       WriteTool,
       TaskTool,
+      OrchestrateTool,
       WebFetchTool,
       TodoWriteTool,
       TodoReadTool,
@@ -111,6 +115,8 @@ export namespace ToolRegistry {
       ...(Flag.OPENCODE_EXPERIMENTAL_LSP_TOOL ? [LspTool] : []),
       ...(config.experimental?.batch_tool === true ? [BatchTool] : []),
       ...(Flag.OPENCODE_EXPERIMENTAL_PLAN_MODE && Flag.OPENCODE_CLIENT === "cli" ? [PlanExitTool, PlanEnterTool] : []),
+      SqlTool,
+      ConfigReaderTool,
       ...custom,
     ]
   }

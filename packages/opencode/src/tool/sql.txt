@@ -1,0 +1,29 @@
+Executes SQL queries against a database. The tool automatically detects database connection information from project configuration files.
+
+Supported configuration sources:
+- Spring Boot: application.yml, application.properties (from src/main/resources/ or project root)
+- Node.js: drizzle.config.ts, prisma/schema.prisma, .env files
+- Python: .env files, settings.py, config.py
+- Environment variables: DATABASE_URL
+
+Supported databases:
+- MySQL (via mysql2)
+- PostgreSQL (via pg)
+- SQLite (via better-sqlite3)
+
+The tool will:
+1. Automatically detect database type and connection details from project configuration
+2. Execute the provided SQL query using parameterized queries to prevent SQL injection
+3. Return query results in a structured format
+4. Truncate large result sets to avoid exceeding context limits
+
+IMPORTANT:
+- Only SELECT queries are allowed by default for safety. Other query types may be restricted based on permissions.
+- All queries use parameterized statements to prevent SQL injection attacks.
+- Database connection information is read from project configuration files or environment variables.
+- Large result sets will be truncated automatically.
+
+Usage:
+- Provide the SQL query as a string
+- Optionally specify database connection details if auto-detection fails
+- The tool will automatically detect the database type from the connection string or configuration

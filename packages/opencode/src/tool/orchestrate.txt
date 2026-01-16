@@ -1,0 +1,24 @@
+Execute a multi-agent workflow by coordinating multiple agents in sequence.
+
+Use this tool when you need to:
+- Execute a sequence of agents (e.g., fix -> test -> git commit)
+- Check conditions before executing steps (e.g., check if git exists before committing)
+- Handle failures with configurable strategies (stop, continue, or jump to specific step)
+
+The workflow is defined as a series of steps, where each step:
+- Calls a specific agent with a prompt
+- Optionally checks a condition before executing
+- Defines what to do on success (next step)
+- Defines what to do on failure (stop, continue, or jump to step)
+
+Condition types:
+- `git_exists`: Check if the project is a git repository
+- `test_passed`: Check if tests passed (by running a test command)
+- `custom`: Execute a custom bash command to check a condition
+
+Example workflow:
+- Step 1: Fix agent (fix the error)
+- Step 2: Test agent (run tests, condition: test_passed)
+- Step 3: Git agent (commit, condition: git_exists, only if step 2 passed)
+
+The tool will execute steps sequentially, check conditions, and handle failures according to the workflow definition.

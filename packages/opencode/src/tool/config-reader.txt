@@ -1,0 +1,33 @@
+Reads and parses project configuration files. This tool helps understand project structure, dependencies, build settings, and other configuration that may be relevant for error analysis and code fixes.
+
+Supported configuration files:
+- package.json - Node.js project dependencies and scripts
+- tsconfig.json - TypeScript compiler configuration
+- jsconfig.json - JavaScript project configuration
+- .env, .env.local, .env.development, .env.production - Environment variables
+- drizzle.config.ts - Drizzle ORM configuration
+- prisma/schema.prisma - Prisma ORM schema
+- vite.config.ts/js - Vite build configuration
+- webpack.config.js/ts - Webpack configuration
+- next.config.js/ts - Next.js configuration
+- application.yml, application.yaml, application.properties - Spring Boot configuration files
+- application-{profile}.yml, application-{profile}.properties - Spring Boot profile-specific configurations
+- Other project-specific configuration files
+
+The tool automatically detects and parses configuration files in common formats:
+- JSON/JSONC (with comments support)
+- JavaScript/TypeScript (exports configuration object)
+- TOML
+- YAML (including Spring Boot application.yml)
+- Properties files (including Spring Boot application.properties)
+- Environment files (.env format)
+
+For Spring Boot projects, the tool will automatically search in:
+- src/main/resources/application.yml
+- src/main/resources/application.properties
+- Project root directory
+
+Usage:
+- Specify the configuration file path relative to project root or absolute path
+- The tool will automatically detect the file format and parse it
+- Returns the parsed configuration in a structured format for analysis
