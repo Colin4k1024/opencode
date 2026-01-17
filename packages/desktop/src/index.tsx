@@ -12,7 +12,7 @@ import { relaunch } from "@tauri-apps/plugin-process"
 import { AsyncStorage } from "@solid-primitives/storage"
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http"
 import { Store } from "@tauri-apps/plugin-store"
-import { Logo } from "@opencode-ai/ui/logo"
+import { Splash } from "@opencode-ai/ui/logo"
 import { createSignal, Show, Accessor, JSX, createResource, onMount, onCleanup } from "solid-js"
 
 import { UPDATER_ENABLED } from "./updater"
@@ -362,32 +362,9 @@ function ServerGate(props: { children: (data: Accessor<ServerReadyData>) => JSX.
     <Show
       when={serverData.state === "ready" && serverData()}
       fallback={
-        <Show
-          when={serverData.state !== "errored"}
-          fallback={
-            <div class="h-screen w-screen flex flex-col items-center justify-center bg-background-base gap-6 px-6">
-              <Logo class="w-xl opacity-12" />
-              <div class="flex flex-col items-center gap-2 text-center max-w-xl">
-                <div class="text-14-medium text-text-strong">Could not start OpenCode Server</div>
-                <pre class="text-12-regular text-text-weak whitespace-pre-wrap font-mono text-left w-full rounded bg-background-elevated p-4 overflow-auto max-h-80">
-                  {spawnErrorMessage(serverData.error)}
-                </pre>
-              </div>
-              <button
-                type="button"
-                class="px-4 py-2 rounded-md bg-accent-base text-accent-fg text-14-medium hover:bg-accent-hover"
-                onClick={() => refetch()}
-              >
-                Retry
-              </button>
-            </div>
-          }
-        >
-          <div class="h-screen w-screen flex flex-col items-center justify-center bg-background-base">
-            <Logo class="w-xl opacity-12 animate-pulse" />
-            <div class="mt-8 text-14-regular text-text-weak">Initializing...</div>
-          </div>
-        </Show>
+        <div class="h-screen w-screen flex flex-col items-center justify-center bg-background-base">
+          <Splash class="w-16 h-20 opacity-50 animate-pulse" />
+        </div>
       }
     >
       {(data) => props.children(data)}
