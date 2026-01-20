@@ -136,7 +136,7 @@ export namespace Provider {
       // Always autoload customer provider if defined in config, even without models
       // Users can add models later in the config file
       return {
-        autoload: hasConfig || false, // Autoload if defined in config, regardless of models
+        autoload: hasConfig, // Autoload if defined in config, regardless of models
         options,
       }
     },
