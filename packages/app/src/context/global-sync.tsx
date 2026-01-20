@@ -628,7 +628,7 @@ function createGlobalSync() {
         }),
       ),
       retry(() =>
-        globalSDK.client.global.configGet().then((x) => {
+        globalSDK.client.config.get().then((x) => {
           setGlobalStore("config", x.data!)
         }),
       ),
@@ -683,7 +683,7 @@ function createGlobalSync() {
     bootstrap,
     updateConfig: async (config: Config) => {
       setGlobalStore("reload", "pending")
-      const response = await globalSDK.client.global.configUpdate({ config })
+      const response = await globalSDK.client.config.update({ config })
       setTimeout(() => {
         setGlobalStore("reload", "complete")
       }, 1000)
