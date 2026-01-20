@@ -1816,7 +1816,7 @@ export namespace Server {
                 source: "custom",
                 env: [],
                 options: {},
-                models: config.provider?.["customer"]?.models ?? {},
+                models: {}, // Models will be loaded from config through Provider.state() if defined
               }
             }
 
