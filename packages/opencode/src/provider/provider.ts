@@ -74,15 +74,70 @@ export namespace Provider {
   }>
 
   const CUSTOM_LOADERS: Record<string, CustomLoader> = {
-    async anthropic() {
+    async anthropic(input) {
+      const config = await Config.get()
+      const providerConfig = config.provider?.["anthropic"]
+
+      // Read environment variables
+      const envBaseURL = Env.get("ANTHROPIC_BASE_URL")
+      const envAuthToken = Env.get("ANTHROPIC_AUTH_TOKEN")
+
+      // Build options with priority: env vars > config file > defaults
+      const options: Record<string, any> = {
+        headers: {
+          "anthropic-beta":
+            "claude-code-20250219,interleaved-thinking-2025-05-14,fine-grained-tool-streaming-2025-05-14",
+        },
+      }
+
+      if (envBaseURL) {
+        options.baseURL = envBaseURL
+      } else if (providerConfig?.options?.baseURL) {
+        options.baseURL = providerConfig.options.baseURL
+      }
+
+      if (envAuthToken) {
+        options.apiKey = envAuthToken
+      } else if (providerConfig?.options?.apiKey) {
+        options.apiKey = providerConfig.options.apiKey
+      }
+
       return {
         autoload: false,
-        options: {
-          headers: {
-            "anthropic-beta":
-              "claude-code-20250219,interleaved-thinking-2025-05-14,fine-grained-tool-streaming-2025-05-14",
-          },
-        },
+        options,
+      }
+    },
+    async customer(input) {
+      const config = await Config.get()
+      const providerConfig = config.provider?.["customer"]
+
+      // Read environment variables
+      const envBaseURL = Env.get("CUSTOMER_BASE_URL")
+      const envApiKey = Env.get("CUSTOMER_API_KEY")
+
+      // Build options with priority: env vars > config file > defaults
+      const options: Record<string, any> = {}
+
+      if (envBaseURL) {
+        options.baseURL = envBaseURL
+      } else if (providerConfig?.options?.baseURL) {
+        options.baseURL = providerConfig.options.baseURL
+      }
+
+      if (envApiKey) {
+        options.apiKey = envApiKey
+      } else if (providerConfig?.options?.apiKey) {
+        options.apiKey = providerConfig.options.apiKey
+      }
+
+      // Check if customer provider is defined in config
+      const hasConfig = !!providerConfig
+
+      // Always autoload customer provider if defined in config, even without models
+      // Users can add models later in the config file
+      return {
+        autoload: hasConfig || false, // Autoload if defined in config, regardless of models
+        options,
       }
     },
     async opencode(input) {
@@ -608,13 +663,13 @@ export namespace Provider {
         },
         experimentalOver200K: model.cost?.context_over_200k
           ? {
-              cache: {
-                read: model.cost.context_over_200k.cache_read ?? 0,
-                write: model.cost.context_over_200k.cache_write ?? 0,
-              },
-              input: model.cost.context_over_200k.input,
-              output: model.cost.context_over_200k.output,
-            }
+            cache: {
+              read: model.cost.context_over_200k.cache_read ?? 0,
+              write: model.cost.context_over_200k.cache_write ?? 0,
+            },
+            input: model.cost.context_over_200k.input,
+            output: model.cost.context_over_200k.output,
+          }
           : undefined,
       },
       limit: {
@@ -894,6 +949,128 @@ export namespace Provider {
       mergeProvider(providerID, partial)
     }
 
+    // Override with environment variables (highest priority)
+    const envBaseURL = Env.get("ANTHROPIC_BASE_URL")
+    const envAuthToken = Env.get("ANTHROPIC_AUTH_TOKEN")
+    if (providers["anthropic"] && (envBaseURL || envAuthToken)) {
+      if (envBaseURL) {
+        providers["anthropic"].options = {
+          ...providers["anthropic"].options,
+          baseURL: envBaseURL,
+        }
+      }
+      if (envAuthToken) {
+        providers["anthropic"].options = {
+          ...providers["anthropic"].options,
+          apiKey: envAuthToken,
+        }
+      }
+    }
+
+    // Add proxy models for Anthropic when using custom baseURL
+    if (providers["anthropic"]) {
+      const anthropicProvider = providers["anthropic"]
+      const envBaseURL = Env.get("ANTHROPIC_BASE_URL")
+      const configBaseURL = config.provider?.["anthropic"]?.options?.baseURL
+      const providerBaseURL = anthropicProvider.options?.baseURL
+
+      // Check if any custom baseURL is set (env > config > provider)
+      const baseURL = envBaseURL || configBaseURL || providerBaseURL
+      const hasCustomBaseURL = baseURL && baseURL !== "https://api.anthropic.com"
+
+      if (hasCustomBaseURL) {
+        log.debug("Adding proxy models for Anthropic", { baseURL, envBaseURL, configBaseURL, providerBaseURL })
+        const proxyModels = [
+          "claude-opus-4-20250514",
+          "claude-sonnet-4-20250514",
+          "claude-3-7-sonnet-20250219",
+          "claude-3-5-sonnet-20241022",
+          "claude-3-5-sonnet-20240620",
+          "claude-3-5-haiku-20241022",
+        ]
+
+        for (const modelID of proxyModels) {
+          if (!anthropicProvider.models[modelID]) {
+            // Create a model entry based on similar existing models
+            const baseModel = anthropicProvider.models["claude-sonnet-4-5-20250929"] ||
+              anthropicProvider.models["claude-3-5-sonnet-20241022"] ||
+              Object.values(anthropicProvider.models)[0]
+
+            if (baseModel) {
+              anthropicProvider.models[modelID] = {
+                ...baseModel,
+                id: modelID,
+                name: modelID.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+                api: {
+                  ...baseModel.api,
+                  id: modelID,
+                },
+              }
+              log.debug("Added proxy model", { modelID, baseModel: baseModel.id })
+            } else {
+              // Fallback model structure if no base model exists
+              anthropicProvider.models[modelID] = {
+                id: modelID,
+                providerID: "anthropic",
+                name: modelID.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+                api: {
+                  id: modelID,
+                  npm: "@ai-sdk/anthropic",
+                  url: anthropicProvider.options?.api,
+                },
+                status: "active" as const,
+                headers: {},
+                options: {},
+                cost: {
+                  input: 0,
+                  output: 0,
+                  cache: {
+                    read: 0,
+                    write: 0,
+                  },
+                },
+                limit: {
+                  context: 200000,
+                  output: 8192,
+                },
+                capabilities: {
+                  temperature: true,
+                  reasoning: modelID.includes("opus") || modelID.includes("sonnet-4"),
+                  attachment: true,
+                  toolcall: true,
+                  input: {
+                    text: true,
+                    audio: false,
+                    image: true,
+                    video: false,
+                    pdf: false,
+                  },
+                  output: {
+                    text: true,
+                    audio: false,
+                    image: false,
+                    video: false,
+                    pdf: false,
+                  },
+                  interleaved: false,
+                },
+                release_date: modelID.match(/\d{8}/)?.[0] || "",
+                variants: {},
+              }
+              log.debug("Added proxy model (fallback)", { modelID })
+            }
+          } else {
+            log.debug("Proxy model already exists", { modelID })
+          }
+        }
+        log.info("Proxy models added for Anthropic", {
+          count: proxyModels.length,
+          models: proxyModels,
+          baseURL
+        })
+      }
+    }
+
     for (const [providerID, provider] of Object.entries(providers)) {
       if (!isProviderAllowed(providerID)) {
         delete providers[providerID]
@@ -936,8 +1113,13 @@ export namespace Provider {
       }
 
       if (Object.keys(provider.models).length === 0) {
-        delete providers[providerID]
-        continue
+        // Allow providers defined in config to exist without models
+        // This is useful for custom providers where users manually define models
+        const configProvider = config.provider?.[providerID]
+        if (!configProvider) {
+          delete providers[providerID]
+          continue
+        }
       }
 
       log.info("found", { providerID })

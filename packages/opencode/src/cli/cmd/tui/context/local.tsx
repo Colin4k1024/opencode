@@ -54,7 +54,16 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           return agents()
         },
         current() {
-          return agents().find((x) => x.name === agentStore.current)!
+          const found = agents().find((x) => x.name === agentStore.current)
+          if (found) return found
+          // Fallback to first agent if current not found
+          const first = agents()[0]
+          if (first) {
+            setAgentStore("current", first.name)
+            return first
+          }
+          // Return a default agent structure if no agents available
+          return { name: "build", mode: "primary" as const, model: undefined }
         },
         set(name: string) {
           if (!agents().some((x) => x.name === name))
@@ -132,7 +141,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           if (Array.isArray(x.favorite)) setModelStore("favorite", x.favorite)
           if (typeof x.variant === "object" && x.variant !== null) setModelStore("variant", x.variant)
         })
-        .catch(() => {})
+        .catch(() => { })
         .finally(() => {
           setModelStore("ready", true)
         })

@@ -20,6 +20,7 @@ const PROVIDER_PRIORITY: Record<string, number> = {
   "github-copilot": 2,
   openai: 3,
   google: 4,
+  customer: 5,
 }
 
 export function createDialogProviderOptions() {
@@ -40,6 +41,7 @@ export function createDialogProviderOptions() {
             opencode: "(Recommended)",
             anthropic: "(Claude Max or API key)",
             openai: "(ChatGPT Plus/Pro or API key)",
+            customer: "(Custom OpenAI-compatible endpoint)",
           }[provider.id],
           category: provider.id in PROVIDER_PRIORITY ? "Popular" : "Other",
           footer: isConnected ? "Connected" : undefined,
@@ -216,7 +218,32 @@ interface ApiMethodProps {
   providerID: string
   title: string
 }
-function ApiMethod(props: ApiMethodProps) {
+
+// Providers that support baseURL configuration
+const PROVIDERS_WITH_BASEURL = [
+  "anthropic",
+  "openai",
+  "openai-compatible",
+  "azure-cognitive-services",
+  "amazon-bedrock",
+  "cloudflare-ai-gateway",
+  "helicone",
+  "together",
+  "groq",
+  "mistral",
+  "deepinfra",
+  "cerebras",
+  "cohere",
+  "perplexity",
+  "xai",
+  "customer",
+]
+
+function supportsBaseURL(providerID: string) {
+  return PROVIDERS_WITH_BASEURL.includes(providerID) || providerID.startsWith("openai-compatible")
+}
+
+function ApiKeyStep(props: ApiMethodProps) {
   const dialog = useDialog()
   const sdk = useSDK()
   const sync = useSync()
@@ -247,10 +274,76 @@ function ApiMethod(props: ApiMethodProps) {
             key: value,
           },
         })
+        if (supportsBaseURL(props.providerID)) {
+          dialog.replace(() => <BaseURLStep {...props} />)
+        } else {
+          await sdk.client.instance.dispose()
+          await sync.bootstrap()
+          dialog.replace(() => <DialogModel providerID={props.providerID} />)
+        }
+      }}
+    />
+  )
+}
+
+function BaseURLStep(props: ApiMethodProps) {
+  const dialog = useDialog()
+  const sdk = useSDK()
+  const sync = useSync()
+  const { theme } = useTheme()
+
+  return (
+    <DialogPrompt
+      title="Configure Base URL (Optional)"
+      placeholder="https://api.example.com/v1"
+      description={() => (
+        <box gap={1}>
+          <text fg={theme.textMuted}>
+            Enter a custom base URL for this provider, or press enter to skip and use the default.
+          </text>
+          <text fg={theme.textMuted}>
+            This is useful for proxy services or custom endpoints.
+          </text>
+        </box>
+      )}
+      onConfirm={async (baseURL) => {
+        if (baseURL && baseURL.trim()) {
+          try {
+            const currentConfig = await sdk.client.config.get({}, { throwOnError: true })
+            await sdk.client.config.update({
+              config: {
+                ...(currentConfig.data || {}),
+                provider: {
+                  ...(currentConfig.data?.provider || {}),
+                  [props.providerID]: {
+                    ...(currentConfig.data?.provider?.[props.providerID] || {}),
+                    options: {
+                      ...(currentConfig.data?.provider?.[props.providerID]?.options || {}),
+                      baseURL: baseURL.trim(),
+                    },
+                  },
+                },
+              },
+            })
+          } catch (error) {
+            // If config update fails, continue anyway
+            console.error("Failed to update config:", error)
+          }
+        }
+        await sdk.client.instance.dispose()
+        await sync.bootstrap()
+        dialog.replace(() => <DialogModel providerID={props.providerID} />)
+      }}
+      onCancel={async () => {
+        // Skip baseURL, we're done
         await sdk.client.instance.dispose()
         await sync.bootstrap()
         dialog.replace(() => <DialogModel providerID={props.providerID} />)
       }}
     />
   )
+}
+
+function ApiMethod(props: ApiMethodProps) {
+  return <ApiKeyStep {...props} />
 }

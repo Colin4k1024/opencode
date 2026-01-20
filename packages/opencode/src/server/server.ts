@@ -1758,7 +1758,10 @@ export namespace Server {
             const providers = await Provider.list().then((x) => mapValues(x, (item) => item))
             return c.json({
               providers: Object.values(providers),
-              default: mapValues(providers, (item) => Provider.sort(Object.values(item.models))[0].id),
+              default: mapValues(providers, (item) => {
+                const sorted = Provider.sort(Object.values(item.models))
+                return sorted[0]?.id
+              }),
             })
           },
         )
@@ -1803,9 +1806,26 @@ export namespace Server {
               mapValues(filteredProviders, (x) => Provider.fromModelsDevProvider(x)),
               connected,
             )
+
+            // Add customer provider if not already present
+            // This allows users to see and configure it even if not yet defined in config
+            if (!providers["customer"]) {
+              providers["customer"] = {
+                id: "customer",
+                name: "Customer",
+                source: "custom",
+                env: [],
+                options: {},
+                models: config.provider?.["customer"]?.models ?? {},
+              }
+            }
+
             return c.json({
               all: Object.values(providers),
-              default: mapValues(providers, (item) => Provider.sort(Object.values(item.models))[0].id),
+              default: mapValues(providers, (item) => {
+                const sorted = Provider.sort(Object.values(item.models))
+                return sorted[0]?.id
+              }),
               connected: Object.keys(connected),
             })
           },
