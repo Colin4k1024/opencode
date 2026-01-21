@@ -10,10 +10,6 @@ import { Global } from "../global"
 import { Instance } from "../project/instance"
 import { State } from "../project/state"
 
-const parameters = z.object({
-  name: z.string().describe("The skill identifier from available_skills (e.g., 'code-review' or 'category/helper')"),
-})
-
 export const SkillTool = Tool.define("skill", async (ctx) => {
   const log = Log.create({ service: "skill-tool" })
 
@@ -127,6 +123,7 @@ export const SkillTool = Tool.define("skill", async (ctx) => {
           "Load a skill to get detailed instructions for a specific task.",
           "Skills provide specialized knowledge and step-by-step guidance.",
           "Use this when a task matches an available skill's description.",
+          "Only the skills listed here are available:",
           "<available_skills>",
           ...accessibleSkills.flatMap((skill) => [
             `  <skill>`,
@@ -136,6 +133,16 @@ export const SkillTool = Tool.define("skill", async (ctx) => {
           ]),
           "</available_skills>",
         ].join(" ")
+
+  const examples = accessibleSkills
+    .map((skill) => `'${skill.name}'`)
+    .slice(0, 3)
+    .join(", ")
+  const hint = examples.length > 0 ? ` (e.g., ${examples}, ...)` : ""
+
+  const parameters = z.object({
+    name: z.string().describe(`The skill identifier from available_skills${hint}`),
+  })
 
   return {
     description,
