@@ -19,6 +19,7 @@ import { createSignal, Show, Accessor, JSX, createResource, onMount, onCleanup }
 import { UPDATER_ENABLED } from "./updater"
 import { createMenu } from "./menu"
 import pkg from "../package.json"
+import "./styles.css"
 
 const root = document.getElementById("root")
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
@@ -365,7 +366,11 @@ function spawnErrorMessage(err: unknown): string {
 
 // Gate component that waits for the server to be ready
 function ServerGate(props: { children: (data: Accessor<ServerReadyData>) => JSX.Element }) {
-  const [serverData, { refetch }] = createResource<ServerReadyData>(() => invoke("ensure_server_ready"))
+  const [serverData] = createResource<ServerReadyData>(() =>
+    invoke("ensure_server_ready").then((v) => {
+      return new Promise((res) => setTimeout(() => res(v), 2000))
+    }),
+  )
 
   return (
     // Not using suspense as not all components are compatible with it (undefined refs)
@@ -374,6 +379,7 @@ function ServerGate(props: { children: (data: Accessor<ServerReadyData>) => JSX.
       fallback={
         <div class="h-screen w-screen flex flex-col items-center justify-center bg-background-base">
           <Splash class="w-16 h-20 opacity-50 animate-pulse" />
+          <div data-tauri-decorum-tb class="flex flex-row absolute top-0 right-0 z-10 h-10" />
         </div>
       }
     >
