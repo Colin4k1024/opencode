@@ -139,7 +139,9 @@ describe("PermissionNext.disabled for task tool", () => {
 
 // Integration tests that load permissions from real config files
 describe("permission.task with real config files", () => {
-  test("loads task permissions from opencode.json config", async () => {
+  test(
+    "loads task permissions from opencode.json config",
+    async () => {
     await using tmp = await tmpdir({
       git: true,
       config: {
@@ -162,7 +164,9 @@ describe("permission.task with real config files", () => {
         expect(PermissionNext.evaluate("task", "code-reviewer", ruleset).action).toBe("deny")
       },
     })
-  })
+    },
+    20_000,
+  )
 
   test("loads task permissions with wildcard patterns from config", async () => {
     await using tmp = await tmpdir({

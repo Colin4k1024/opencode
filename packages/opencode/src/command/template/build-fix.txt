@@ -1,0 +1,3 @@
+Please fix the current project's build errors. If you need context, run the build command first to see the reported errors.
+
+$ARGUMENTS

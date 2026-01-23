@@ -86,6 +86,47 @@ async function checkCondition(
   }
 }
 
+/**
+ * Determine the phase for a workflow step in coding agent workflows
+ * Returns the phase name if this is a coding workflow, undefined otherwise
+ */
+function getPhase(
+  step: z.infer<typeof stepSchema>,
+  workflowName: string,
+): "plan" | "build" | "test" | "fix" | undefined {
+  // Only apply phase detection to coding agent workflows
+  const isCodingWorkflow =
+    workflowName.toLowerCase().includes("coding") ||
+    workflowName.toLowerCase().includes("todo") ||
+    workflowName.toLowerCase().includes("coding-todo")
+
+  if (!isCodingWorkflow) {
+    return undefined
+  }
+
+  // Check step ID for phase prefix (plan_*, build_*, test_*, fix_*)
+  const stepIdLower = step.id.toLowerCase()
+  if (stepIdLower.startsWith("plan_")) return "plan"
+  if (stepIdLower.startsWith("build_")) return "build"
+  if (stepIdLower.startsWith("test_")) return "test"
+  if (stepIdLower.startsWith("fix_")) return "fix"
+
+  // Fallback: determine phase from agent type
+  if (step.agent === "plan") return "plan"
+  if (step.agent === "build") return "build"
+  if (step.agent === "fix") return "fix"
+  if (step.agent === "general") {
+    // Check prompt for test-related keywords
+    const testKeywords = ["test", "测试", "unit test", "pytest", "jest", "mocha", "vitest", "junit"]
+    const promptLower = step.prompt.toLowerCase()
+    if (testKeywords.some((keyword) => promptLower.includes(keyword))) {
+      return "test"
+    }
+  }
+
+  return undefined
+}
+
 interface StepResult {
   success: boolean
   output: string
@@ -102,6 +143,78 @@ interface StepResult {
     hash: string
   }>
   outputText?: string
+}
+
+interface ExitConditions {
+  maxStepDuration: number // Single step max execution time (ms)
+  maxIterations: number // Max total iterations
+  maxConsecutiveFailures: number // Max consecutive failures
+  maxTotalDuration: number // Workflow total max execution time (ms)
+}
+
+interface ExitCheckResult {
+  shouldExit: boolean
+  reason?: string
+}
+
+function checkExitConditions(
+  conditions: ExitConditions,
+  stepDuration: number,
+  totalDuration: number,
+  iterationCount: number,
+  consecutiveFailures: number,
+): ExitCheckResult {
+  if (stepDuration > conditions.maxStepDuration) {
+    return {
+      shouldExit: true,
+      reason: `Step timeout: ${(stepDuration / 1000 / 60).toFixed(1)} minutes > ${(conditions.maxStepDuration / 1000 / 60).toFixed(1)} minutes`,
+    }
+  }
+  if (totalDuration > conditions.maxTotalDuration) {
+    return {
+      shouldExit: true,
+      reason: `Total timeout: ${(totalDuration / 1000 / 60).toFixed(1)} minutes > ${(conditions.maxTotalDuration / 1000 / 60).toFixed(1)} minutes`,
+    }
+  }
+  if (iterationCount > conditions.maxIterations) {
+    return {
+      shouldExit: true,
+      reason: `Max iterations reached: ${iterationCount} > ${conditions.maxIterations}`,
+    }
+  }
+  if (consecutiveFailures > conditions.maxConsecutiveFailures) {
+    return {
+      shouldExit: true,
+      reason: `Max consecutive failures: ${consecutiveFailures} > ${conditions.maxConsecutiveFailures}`,
+    }
+  }
+  return { shouldExit: false }
+}
+
+function getExitConditions(workflowName: string): ExitConditions {
+  // Only apply exit conditions to coding agent workflows
+  const isCodingWorkflow =
+    workflowName.toLowerCase().includes("coding") ||
+    workflowName.toLowerCase().includes("todo") ||
+    workflowName.toLowerCase().includes("coding-todo")
+
+  if (!isCodingWorkflow) {
+    // Return very high limits for non-coding workflows (effectively disabled)
+    return {
+      maxStepDuration: Number.MAX_SAFE_INTEGER,
+      maxIterations: Number.MAX_SAFE_INTEGER,
+      maxConsecutiveFailures: Number.MAX_SAFE_INTEGER,
+      maxTotalDuration: Number.MAX_SAFE_INTEGER,
+    }
+  }
+
+  // Default exit conditions for coding agent workflows
+  return {
+    maxStepDuration: 30 * 60 * 1000, // 30 minutes
+    maxIterations: 10, // 10 iterations
+    maxConsecutiveFailures: 3, // 3 consecutive failures
+    maxTotalDuration: 2 * 60 * 60 * 1000, // 2 hours
+  }
 }
 
 async function extractStepInfo(sessionID: string): Promise<{
@@ -166,11 +279,16 @@ async function executeStep(
   stepIndex: number,
   totalSteps: number,
 ): Promise<StepResult> {
+  // Determine phase for coding agent workflows
+  const phase = getPhase(step, workflowName)
+  const phaseLabel = phase ? ` - Phase: ${phase.charAt(0).toUpperCase() + phase.slice(1)}` : ""
+
   // Send progress update: starting step
   ctx.metadata({
-    title: `Executing ${workflowName} - Step ${stepIndex + 1}/${totalSteps}: ${step.id} (@${step.agent})`,
+    title: `Coding Agent${phaseLabel} - Step ${stepIndex + 1}/${totalSteps}: ${step.id} (@${step.agent})`,
     metadata: {
       workflow: workflowName,
+      phase,
       currentStep: step.id,
       stepIndex: stepIndex + 1,
       totalSteps,
@@ -183,10 +301,14 @@ async function executeStep(
   if (step.condition) {
     const conditionMet = await checkCondition(step.condition, ctx)
     if (!conditionMet) {
+      const phase = getPhase(step, workflowName)
+      const phaseLabel = phase ? ` - Phase: ${phase.charAt(0).toUpperCase() + phase.slice(1)}` : ""
+
       ctx.metadata({
-        title: `Skipped ${workflowName} - Step ${stepIndex + 1}/${totalSteps}: ${step.id}`,
+        title: `Coding Agent${phaseLabel} - Skipped Step ${stepIndex + 1}/${totalSteps}: ${step.id}`,
         metadata: {
           workflow: workflowName,
+          phase,
           currentStep: step.id,
           stepIndex: stepIndex + 1,
           totalSteps,
@@ -285,11 +407,16 @@ async function executeStep(
     // Get the final text output
     const text = result.parts.findLast((x) => x.type === "text")?.text ?? stepInfo.outputText
 
+    // Determine phase for coding agent workflows
+    const phase = getPhase(step, workflowName)
+    const phaseLabel = phase ? ` - Phase: ${phase.charAt(0).toUpperCase() + phase.slice(1)}` : ""
+
     // Send progress update: step completed
     ctx.metadata({
-      title: `Completed ${workflowName} - Step ${stepIndex + 1}/${totalSteps}: ${step.id}`,
+      title: `Coding Agent${phaseLabel} - Completed Step ${stepIndex + 1}/${totalSteps}: ${step.id}`,
       metadata: {
         workflow: workflowName,
+        phase,
         currentStep: step.id,
         stepIndex: stepIndex + 1,
         totalSteps,
@@ -297,6 +424,7 @@ async function executeStep(
         agent: step.agent,
         toolCallsCount: stepInfo.toolCalls?.length ?? 0,
         fileChangesCount: stepInfo.fileChanges?.length ?? 0,
+        progress: Math.round(((stepIndex + 1) / totalSteps) * 100),
       },
     })
 
@@ -364,6 +492,9 @@ export const OrchestrateTool = Tool.define("orchestrate", {
 
     let currentStepId: string | null = workflow.steps[0]?.id || null
     const executedSteps: string[] = []
+    const exitConditions = getExitConditions(workflow.name)
+    let consecutiveFailures = 0
+    let iterationCount = 0
 
     while (currentStepId) {
       if (executedSteps.includes(currentStepId)) {
@@ -371,6 +502,42 @@ export const OrchestrateTool = Tool.define("orchestrate", {
         break
       }
       executedSteps.push(currentStepId)
+      iterationCount++
+
+      // Check exit conditions before starting new step
+      const totalDurationBeforeStep = Date.now() - startTime
+      const exitCheckBeforeStep = checkExitConditions(
+        exitConditions,
+        0,
+        totalDurationBeforeStep,
+        iterationCount,
+        consecutiveFailures,
+      )
+      if (exitCheckBeforeStep.shouldExit) {
+        outputParts.push(`\n${"─".repeat(60)}\n`)
+        outputParts.push(`⚠️  [退出] 工作流因退出条件而终止\n`)
+        outputParts.push(`   原因: ${exitCheckBeforeStep.reason}\n`)
+        outputParts.push(`   已执行步骤: ${executedSteps.length}/${totalSteps}\n`)
+        outputParts.push(`   总耗时: ${(totalDurationBeforeStep / 1000 / 60).toFixed(1)} 分钟\n`)
+        outputParts.push(`${"─".repeat(60)}\n`)
+
+        ctx.metadata({
+          title: `Workflow exited: ${workflow.name}`,
+          metadata: {
+            workflow: workflow.name,
+            status: "exited",
+            exitReason: exitCheckBeforeStep.reason,
+            executedSteps: executedSteps.length,
+            totalSteps,
+            totalDuration: totalDurationBeforeStep,
+            iterationCount,
+            consecutiveFailures,
+            currentOutput: outputParts.join(""),
+            progress: Math.round((executedSteps.length / totalSteps) * 100),
+          },
+        })
+        break
+      }
 
       const step = stepMap.get(currentStepId)
       if (!step) {
@@ -381,16 +548,24 @@ export const OrchestrateTool = Tool.define("orchestrate", {
       const stepStartTime = Date.now()
 
       // Output step start information
+      // Determine phase for coding agent workflows
+      const phase = getPhase(step, workflow.name)
+      const phaseLabel = phase ? ` - Phase: ${phase.charAt(0).toUpperCase() + phase.slice(1)}` : ""
+
       outputParts.push(`\n${"─".repeat(60)}\n`)
-      outputParts.push(`📋 [步骤 ${stepIndex}/${totalSteps}] 开始执行\n`)
+      outputParts.push(`📋 [步骤 ${stepIndex}/${totalSteps}] 开始执行${phase ? ` (${phase})` : ""}\n`)
       outputParts.push(`   步骤ID: ${step.id}\n`)
       outputParts.push(`   执行Agent: @${step.agent}\n`)
+      if (phase) {
+        outputParts.push(`   阶段: ${phase.charAt(0).toUpperCase() + phase.slice(1)}\n`)
+      }
       outputParts.push(`   开始时间: ${new Date(stepStartTime).toLocaleTimeString()}\n`)
       outputParts.push(`${"─".repeat(60)}\n`)
       ctx.metadata({
-        title: `Executing ${workflow.name} - Step ${stepIndex}/${totalSteps}: ${step.id}`,
+        title: `Coding Agent${phaseLabel} - Step ${stepIndex}/${totalSteps}: ${step.id}`,
         metadata: {
           workflow: workflow.name,
+          phase,
           currentStep: step.id,
           stepIndex,
           totalSteps,
@@ -406,8 +581,58 @@ export const OrchestrateTool = Tool.define("orchestrate", {
       stepResults.set(step.id, result)
 
       const stepDuration = Date.now() - stepStartTime
+      const totalDurationAfterStep = Date.now() - startTime
       const statusIcon = result.success ? "✓" : "✗"
       const statusText = result.success ? "Success" : "Failed"
+
+      // Update failure tracking
+      if (result.success) {
+        consecutiveFailures = 0
+      } else if (!result.skipped) {
+        consecutiveFailures++
+      }
+
+      // Check exit conditions after step completion
+      const exitCheckAfterStep = checkExitConditions(
+        exitConditions,
+        stepDuration,
+        totalDurationAfterStep,
+        iterationCount,
+        consecutiveFailures,
+      )
+      if (exitCheckAfterStep.shouldExit) {
+        outputParts.push(`\n${"─".repeat(60)}\n`)
+        outputParts.push(`⚠️  [退出] 工作流因退出条件而终止\n`)
+        outputParts.push(`   原因: ${exitCheckAfterStep.reason}\n`)
+        outputParts.push(`   当前步骤: ${step.id} (${statusText})\n`)
+        outputParts.push(`   已执行步骤: ${executedSteps.length}/${totalSteps}\n`)
+        outputParts.push(`   总耗时: ${(totalDurationAfterStep / 1000 / 60).toFixed(1)} 分钟\n`)
+        outputParts.push(`${"─".repeat(60)}\n`)
+
+        ctx.metadata({
+          title: `Workflow exited: ${workflow.name}`,
+          metadata: {
+            workflow: workflow.name,
+            status: "exited",
+            exitReason: exitCheckAfterStep.reason,
+            currentStep: step.id,
+            stepStatus: result.success ? "completed" : "failed",
+            executedSteps: executedSteps.length,
+            totalSteps,
+            totalDuration: totalDurationAfterStep,
+            iterationCount,
+            consecutiveFailures,
+            currentOutput: outputParts.join(""),
+            progress: Math.round((executedSteps.length / totalSteps) * 100),
+            stepDetails: {
+              success: result.success,
+              skipped: result.skipped || false,
+              duration: stepDuration,
+            },
+          },
+        })
+        break
+      }
 
       // Output step completion information
       const durationSeconds = (stepDuration / 1000).toFixed(2)
@@ -444,9 +669,10 @@ export const OrchestrateTool = Tool.define("orchestrate", {
 
       // Send metadata update with step completion details
       ctx.metadata({
-        title: `Completed ${workflow.name} - Step ${stepIndex}/${totalSteps}: ${step.id}`,
+        title: `Coding Agent${phaseLabel} - Completed Step ${stepIndex}/${totalSteps}: ${step.id}`,
         metadata: {
           workflow: workflow.name,
+          phase,
           currentStep: step.id,
           stepIndex,
           totalSteps,
@@ -475,11 +701,16 @@ export const OrchestrateTool = Tool.define("orchestrate", {
         outputParts.push(`   条件: ${step.condition?.type || "unknown"}\n`)
         outputParts.push(`${"─".repeat(60)}\n`)
 
+        // Determine phase for coding agent workflows
+        const phase = getPhase(step, workflow.name)
+        const phaseLabel = phase ? ` - Phase: ${phase.charAt(0).toUpperCase() + phase.slice(1)}` : ""
+
         // Send metadata update for skipped step
         ctx.metadata({
-          title: `Skipped ${workflow.name} - Step ${stepIndex}/${totalSteps}: ${step.id}`,
+          title: `Coding Agent${phaseLabel} - Skipped Step ${stepIndex}/${totalSteps}: ${step.id}`,
           metadata: {
             workflow: workflow.name,
+            phase,
             currentStep: step.id,
             stepIndex,
             totalSteps,
@@ -665,11 +896,16 @@ export const OrchestrateTool = Tool.define("orchestrate", {
       title: `Workflow: ${workflow.name}`,
       metadata: {
         workflow: workflow.name,
-        steps: Array.from(stepResults.entries()).map(([id, result]) => ({
-          id,
-          success: result.success,
-          sessionID: result.sessionID,
-        })),
+        steps: Array.from(stepResults.entries()).map(([id, result]) => {
+          const step = stepMap.get(id)
+          return {
+            id,
+            success: result.success,
+            sessionID: result.sessionID,
+            agent: step?.agent,
+            skipped: result.skipped,
+          }
+        }),
       },
       output,
     }

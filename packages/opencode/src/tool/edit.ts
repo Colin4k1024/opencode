@@ -16,6 +16,11 @@ import { Filesystem } from "../util/filesystem"
 import { Instance } from "../project/instance"
 import { Snapshot } from "@/snapshot"
 import { assertExternalDirectory } from "./external-directory"
+import { Config } from "../config/config"
+import { scanSecrets } from "../util/secret-check"
+
+const CODE_EXT_RE = /\.(js|ts|jsx|tsx)$/i
+const CONSOLE_LOG_RE = /console\.log\s*\(/
 
 const MAX_DIAGNOSTICS_PER_FILE = 20
 
@@ -43,6 +48,7 @@ export const EditTool = Tool.define("edit", {
     const filePath = path.isAbsolute(params.filePath) ? params.filePath : path.join(Instance.directory, params.filePath)
     await assertExternalDirectory(ctx, filePath)
 
+    const cfg = await Config.get()
     let diff = ""
     let contentOld = ""
     let contentNew = ""
@@ -50,18 +56,21 @@ export const EditTool = Tool.define("edit", {
       if (params.oldString === "") {
         contentNew = params.newString
         diff = trimDiff(createTwoFilesPatch(filePath, filePath, contentOld, contentNew))
+        const askMeta1: Record<string, unknown> = { filepath: filePath, diff }
+        if (cfg.rules?.noSecrets) {
+          const m = scanSecrets(contentNew)
+          if (m) Object.assign(askMeta1, { likelySecret: true, matched: m.snippet, pattern: m.pattern })
+        }
         await ctx.ask({
           permission: "edit",
           patterns: [path.relative(Instance.worktree, filePath)],
           always: ["*"],
-          metadata: {
-            filepath: filePath,
-            diff,
-          },
+          metadata: askMeta1,
         })
         await Bun.write(filePath, params.newString)
         await Bus.publish(File.Event.Edited, {
           file: filePath,
+          tool: "edit",
         })
         FileTime.read(ctx.sessionID, filePath)
         return
@@ -78,19 +87,22 @@ export const EditTool = Tool.define("edit", {
       diff = trimDiff(
         createTwoFilesPatch(filePath, filePath, normalizeLineEndings(contentOld), normalizeLineEndings(contentNew)),
       )
+      const askMeta2: Record<string, unknown> = { filepath: filePath, diff }
+      if (cfg.rules?.noSecrets) {
+        const m = scanSecrets(contentNew)
+        if (m) Object.assign(askMeta2, { likelySecret: true, matched: m.snippet, pattern: m.pattern })
+      }
       await ctx.ask({
         permission: "edit",
         patterns: [path.relative(Instance.worktree, filePath)],
         always: ["*"],
-        metadata: {
-          filepath: filePath,
-          diff,
-        },
+        metadata: askMeta2,
       })
 
       await file.write(contentNew)
       await Bus.publish(File.Event.Edited, {
         file: filePath,
+        tool: "edit",
       })
       contentNew = await file.text()
       diff = trimDiff(
@@ -130,6 +142,14 @@ export const EditTool = Tool.define("edit", {
       const suffix =
         errors.length > MAX_DIAGNOSTICS_PER_FILE ? `\n... and ${errors.length - MAX_DIAGNOSTICS_PER_FILE} more` : ""
       output += `\n\nLSP errors detected in this file, please fix:\n<diagnostics file="${filePath}">\n${limited.map(LSP.Diagnostic.pretty).join("\n")}${suffix}\n</diagnostics>`
+    }
+
+    if (
+      cfg.experimental?.hook?.codeHygiene?.warnConsoleLog &&
+      CODE_EXT_RE.test(filePath) &&
+      CONSOLE_LOG_RE.test(contentNew)
+    ) {
+      output += "\n\n[Code hygiene] This file contains console.log. Consider removing before commit."
     }
 
     return {

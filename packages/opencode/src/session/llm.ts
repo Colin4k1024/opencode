@@ -1,4 +1,5 @@
 import os from "os"
+import path from "path"
 import { Installation } from "@/installation"
 import { Provider } from "@/provider/provider"
 import { Log } from "@/util/log"
@@ -63,6 +64,7 @@ export namespace LLM {
     ])
     const isCodex = provider.id === "openai" && auth?.type === "oauth"
 
+    const rulesParts = await rulesSystemAddition(cfg)
     const system = SystemPrompt.header(input.model.providerID)
     system.push(
       [
@@ -73,6 +75,7 @@ export namespace LLM {
         ...input.system,
         // any custom prompt from last user message
         ...(input.user.system ? [input.user.system] : []),
+        ...rulesParts,
       ]
         .filter((x) => x)
         .join("\n"),
@@ -234,5 +237,22 @@ export namespace LLM {
       }
     }
     return input.tools
+  }
+
+  async function rulesSystemAddition(cfg: Config.Info): Promise<string[]> {
+    const out: string[] = []
+    if (cfg.rules?.tdd?.enforce) {
+      const cov = cfg.rules.tdd.coverage ?? 80
+      out.push(
+        `\n## TDD\nFollow Test-Driven Development: write a failing test first, then implement, then refactor. Aim for at least ${cov}% test coverage.`,
+      )
+    }
+    if (cfg.rules?.delegateToSubagent) {
+      const p = cfg.rules.delegateToSubagent
+      const full = path.isAbsolute(p) ? p : path.join(Instance.worktree, p)
+      const text = await Bun.file(full).text().catch(() => p)
+      out.push(`\n## When to delegate to subagents\n${text}`)
+    }
+    return out
   }
 }

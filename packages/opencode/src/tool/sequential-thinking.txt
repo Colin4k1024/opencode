@@ -1,0 +1,43 @@
+Use this tool for structured, step-by-step thinking when dealing with complex problems that require careful analysis, planning, or problem-solving.
+
+This tool helps you:
+- Break down complex problems into manageable thinking steps
+- Revise and refine your thoughts as understanding deepens
+- Branch into alternative paths of reasoning when needed
+- Dynamically adjust the total number of thoughts needed
+- Generate and verify solution hypotheses
+
+**When to use this tool:**
+- Complex tasks that require multiple steps or phases
+- Tasks with dependencies or conditional logic
+- Problems that need careful analysis before implementation
+- Situations where you need to explore different approaches
+- Tasks that require risk assessment or planning
+
+**How to use:**
+1. Start with thought 1, providing your initial analysis
+2. Continue with subsequent thoughts, building on previous ones
+3. If you realize a previous thought needs revision, use `isRevision: true` and `revisesThought`
+4. If you want to explore an alternative approach, use `branchFromThought` and `branchId`
+5. Adjust `totalThoughts` as needed when you realize more or fewer thoughts are required
+6. Set `nextThoughtNeeded: false` when you've completed your thinking
+
+**Parameters:**
+- `thought` (required): Your current thinking step content
+- `thoughtNumber` (required): Current thought number in sequence
+- `totalThoughts` (required): Estimated total thoughts needed (can be adjusted)
+- `nextThoughtNeeded` (required): Whether another thought is needed
+- `isRevision` (optional): Set to true if revising a previous thought
+- `revisesThought` (optional): The thought number being revised
+- `branchFromThought` (optional): Thought number to branch from
+- `branchId` (optional): Identifier for the branch
+- `needsMoreThoughts` (optional): Set to true if you need more thoughts than initially estimated
+
+**Example usage:**
+1. First thought: Analyze the problem
+2. Second thought: Identify key components
+3. Third thought: Design solution approach
+4. Fourth thought (revision): Revise approach based on new understanding
+5. Fifth thought: Finalize plan
+
+The tool maintains a complete thinking chain that you can reference throughout your workflow execution.

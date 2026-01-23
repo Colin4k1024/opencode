@@ -1,0 +1,24 @@
+Generate or update the feature specification.
+
+Input: $ARGUMENTS
+
+## Instructions
+- If `.opencode/speckit/context.json` does not exist, stop and instruct the user to run `/speckit.init <feature-name>` first.
+- Read `.opencode/speckit/context.json` to get `featureId` and `featureName`.
+- Ensure the directory `.opencode/speckit/specs/<featureId>/` exists.
+  - Run bash: `mkdir -p .opencode/speckit/specs/<featureId>`
+- If `.opencode/speckit/specs/<featureId>/requirements.md` exists, treat it as the source of truth:
+  - Each user story and acceptance criterion MUST reference one or more `REQ-###` IDs.
+- Create/update `.opencode/speckit/specs/<featureId>/spec.md` with:
+  - Overview (what/why)
+  - Goals
+  - Non-goals
+  - Personas / primary users (if applicable)
+  - User stories (each with acceptance criteria)
+  - Constraints (security, performance, compatibility)
+  - Open questions / clarifications
+- Use the input as the source of truth for requirements when `requirements.md` is absent.
+  Do not invent major requirements; if something is unclear, put it into Open questions.
+
+## Rules
+- Only write/edit files under `.opencode/speckit/**`.

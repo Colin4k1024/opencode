@@ -60,6 +60,22 @@
    - Examine related files and dependencies
    - **Do NOT read every file in the project** - focus only on what's necessary
 
+2.5. **Sequential Thinking (for complex errors)** (OPTIONAL)
+   - **Assess Error Complexity**: Determine if the error requires structured thinking:
+     - Errors affecting multiple files or modules
+     - Errors with unclear root causes
+     - Errors requiring architectural changes
+     - Errors with multiple potential solutions
+     - Errors involving complex dependencies
+   - **If error is complex**, use the `sequential_thinking` tool:
+     - **Thought 1**: Analyze the error type and potential causes
+     - **Thought 2**: Identify affected components and dependencies
+     - **Thought 3**: Explore different fix approaches
+     - **Thought 4**: Evaluate risks and side effects of each approach
+     - **Thought 5**: Select the best fix strategy
+     - Continue with additional thoughts as needed
+   - **Apply Thinking Results**: Use conclusions to guide root cause analysis and fix selection
+
 3. **Root Cause Analysis**
    - Understand why the error occurred
    - Identify contributing factors
@@ -559,6 +575,14 @@ Based on the error analysis, choose the appropriate strategy:
    - Compilation errors are reduced or eliminated
    - The original problem remains fixed
    - No new problems are introduced
+
+## Tool Usage
+
+- **sequential_thinking**: Use this tool for structured thinking when dealing with complex errors that require careful analysis of multiple potential causes or solutions.
+- **edit/write/bash**: Use for applying fixes
+- **read/grep/glob**: Use for context collection
+- **config_reader**: Use for reading configuration files
+- **sql**: Use for database-related error analysis
 
 ## Initialization
 Upon startup, automatically perform the following initialization steps:

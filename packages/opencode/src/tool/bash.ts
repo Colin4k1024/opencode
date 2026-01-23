@@ -16,8 +16,13 @@ import { Shell } from "@/shell/shell"
 
 import { BashArity } from "@/permission/arity"
 import { Truncate } from "./truncation"
+import { Config } from "../config/config"
 
 const MAX_METADATA_LENGTH = 30_000
+
+/** Match -m "msg" or -m 'msg' (simple, no nested quotes). */
+const GIT_COMMIT_M_RE = /-m\s+["']([^"']*)["']/
+const CONVENTIONAL_RE = /^[a-z]+(\([a-z0-9-]+\))?: .+/
 const DEFAULT_TIMEOUT = Flag.OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS || 2 * 60 * 1000
 
 export const log = Log.create({ service: "bash-tool" })
@@ -80,6 +85,28 @@ export const BashTool = Tool.define("bash", async () => {
         throw new Error(`Invalid timeout value: ${params.timeout}. Timeout must be a positive number.`)
       }
       const timeout = params.timeout ?? DEFAULT_TIMEOUT
+      const cfg = await Config.get()
+      const fmt = cfg.rules?.gitCommitFormat
+      if (fmt && fmt !== "none") {
+        const m = params.command.match(GIT_COMMIT_M_RE)
+        if (m) {
+          const msg = m[1].trim()
+          const ok = CONVENTIONAL_RE.test(msg)
+          if (!ok) {
+            await ctx.ask({
+              permission: "bash",
+              patterns: ["git commit*"],
+              always: ["*"],
+              metadata: {
+                gitCommitFormatInvalid: true,
+                message: msg,
+                expected: "type(scope): subject",
+                format: fmt,
+              },
+            })
+          }
+        }
+      }
       const tree = await parser().then((p) => p.parse(params.command))
       if (!tree) {
         throw new Error("Failed to parse command")
@@ -142,6 +169,15 @@ export const BashTool = Tool.define("bash", async () => {
           patterns: Array.from(directories),
           always: Array.from(directories).map((x) => path.dirname(x) + "*"),
           metadata: {},
+        })
+      }
+
+      if (cfg.experimental?.hook?.pushConfirm && /git\s+push(?:\s|$)/i.test(params.command)) {
+        await ctx.ask({
+          permission: "bash",
+          patterns: ["git push*"],
+          always: ["*"],
+          metadata: { requirePushConfirm: true, suggestOpenEditor: true },
         })
       }
 

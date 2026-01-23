@@ -1,0 +1,11 @@
+Run doc-driven speckit vibecoding.
+
+Input: $ARGUMENTS
+
+## Instructions
+- Use the speckit-vibe agent workflow:
+  - Ingest mixed requirement sources (files/paste/URLs)
+  - Decompose into `requirements.md` with REQ-IDs and strict source refs
+  - Ask minimal clarification questions for gaps
+  - Generate `spec.md`, `plan.md`, `tasks.md` referencing REQ-IDs
+  - Auto-implement via coding agent using tasks.md

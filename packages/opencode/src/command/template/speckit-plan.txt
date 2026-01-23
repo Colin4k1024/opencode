@@ -1,0 +1,26 @@
+Generate or update the technical plan for the current feature.
+
+Input: $ARGUMENTS
+
+## Instructions
+- If `.opencode/speckit/context.json` does not exist, stop and instruct the user to run `/speckit.init <feature-name>` first.
+- Read:
+  - `.opencode/speckit/context.json`
+  - `.opencode/speckit/constitution.md`
+  - `.opencode/speckit/specs/<featureId>/spec.md`
+- If present, also read `.opencode/speckit/specs/<featureId>/requirements.md` and ensure plan sections reference `REQ-###`.
+- Ensure `.opencode/speckit/specs/<featureId>/` exists.
+  - Run bash: `mkdir -p .opencode/speckit/specs/<featureId>`
+- Write `.opencode/speckit/specs/<featureId>/plan.md` with:
+  - Architecture overview (components/modules)
+  - Data flow (as text; keep it simple)
+  - Key design decisions and trade-offs
+  - File-by-file implementation outline (paths and what changes)
+  - Testing strategy
+  - Rollout / migration notes (if relevant)
+  - Risks and mitigations
+- Use the input as tech stack / constraints / architecture choices. If input is empty, propose a minimal plan based on existing repo conventions.
+  If `requirements.md` exists, include an explicit mapping section: `REQ-### -> plan components/files`.
+
+## Rules
+- Only write/edit files under `.opencode/speckit/**`.

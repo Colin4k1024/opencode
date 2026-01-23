@@ -1,3 +1,6 @@
+import path from "path"
+import fs from "fs/promises"
+import matter from "gray-matter"
 import z from "zod"
 import { Config } from "../config/config"
 import { Instance } from "../project/instance"
@@ -37,6 +40,7 @@ export namespace Skill {
 
   const OPENCODE_SKILL_GLOB = new Bun.Glob("{skill,skills}/**/SKILL.md")
   const CLAUDE_SKILL_GLOB = new Bun.Glob("skills/**/SKILL.md")
+  const BUNDLED_SKILLS_GLOB = new Bun.Glob("**/SKILL.md")
 
   export const state = Instance.state(async () => {
     const skills: Record<string, Info> = {}
@@ -63,6 +67,19 @@ export namespace Skill {
         name: parsed.data.name,
         description: parsed.data.description,
         location: match,
+      }
+    }
+
+    // Scan bundled skills in packages/opencode/skills/ first (user skills override later)
+    const bundledDir = path.join(import.meta.dir, "..", "..", "skills")
+    if (await Filesystem.isDir(bundledDir)) {
+      for await (const match of BUNDLED_SKILLS_GLOB.scan({
+        cwd: bundledDir,
+        absolute: true,
+        onlyFiles: true,
+        followSymlinks: true,
+      })) {
+        await addSkill(match)
       }
     }
 
@@ -122,5 +139,33 @@ export namespace Skill {
 
   export async function all() {
     return state().then((x) => Object.values(x))
+  }
+
+  /**
+   * Create a new skill at baseDir/name/SKILL.md with the given frontmatter and content.
+   * baseDir defaults to .opencode/skill in the project worktree.
+   */
+  export async function create(input: {
+    name: string
+    description: string
+    content: string
+    baseDir?: string
+  }): Promise<Info> {
+    const base = input.baseDir ?? path.join(Instance.worktree, ".opencode", "skill")
+    const dir = path.join(base, input.name)
+    const filePath = path.join(dir, "SKILL.md")
+    await fs.mkdir(dir, { recursive: true })
+    const body = matter.stringify(input.content.trim(), {
+      name: input.name,
+      description: input.description,
+    })
+    await fs.writeFile(filePath, body, "utf8")
+    const info: Info = {
+      name: input.name,
+      description: input.description,
+      location: filePath,
+    }
+    await Instance.dispose()
+    return info
   }
 }

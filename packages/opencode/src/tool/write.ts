@@ -11,6 +11,9 @@ import { Filesystem } from "../util/filesystem"
 import { Instance } from "../project/instance"
 import { trimDiff } from "./edit"
 import { assertExternalDirectory } from "./external-directory"
+import { Config } from "../config/config"
+import { scanSecrets } from "../util/secret-check"
+import { minimatch } from "minimatch"
 
 const MAX_DIAGNOSTICS_PER_FILE = 20
 const MAX_PROJECT_DIAGNOSTICS_FILES = 5
@@ -31,19 +34,44 @@ export const WriteTool = Tool.define("write", {
     if (exists) await FileTime.assert(ctx.sessionID, filepath)
 
     const diff = trimDiff(createTwoFilesPatch(filepath, filepath, contentOld, params.content))
+    const cfg = await Config.get()
+    const rel = path.relative(Instance.worktree, filepath)
+    if (
+      !exists &&
+      /\.(md|txt)$/i.test(filepath) &&
+      !/^README/i.test(path.basename(filepath)) &&
+      cfg.experimental?.hook?.docControl
+    ) {
+      const allowPaths = cfg.experimental.hook.docControl.allowPaths ?? []
+      const allowed = allowPaths.some((p) => minimatch(rel.replace(/\\/g, "/"), p))
+      if (!allowed) {
+        if (cfg.experimental.hook.docControl.defaultPermission === "deny") {
+          throw new Error("Creating this doc is not allowed (docControl.defaultPermission: deny).")
+        }
+        await ctx.ask({
+          permission: "create_doc",
+          patterns: [rel],
+          always: ["*"],
+          metadata: { createDoc: true },
+        })
+      }
+    }
+    const askMeta: Record<string, unknown> = { filepath, diff }
+    if (cfg.rules?.noSecrets) {
+      const m = scanSecrets(params.content)
+      if (m) Object.assign(askMeta, { likelySecret: true, matched: m.snippet, pattern: m.pattern })
+    }
     await ctx.ask({
       permission: "edit",
       patterns: [path.relative(Instance.worktree, filepath)],
       always: ["*"],
-      metadata: {
-        filepath,
-        diff,
-      },
+      metadata: askMeta,
     })
 
     await Bun.write(filepath, params.content)
     await Bus.publish(File.Event.Edited, {
       file: filepath,
+      tool: "write",
     })
     FileTime.read(ctx.sessionID, filepath)
 
@@ -65,6 +93,14 @@ export const WriteTool = Tool.define("write", {
       if (projectDiagnosticsCount >= MAX_PROJECT_DIAGNOSTICS_FILES) continue
       projectDiagnosticsCount++
       output += `\n\nLSP errors detected in other files:\n<diagnostics file="${file}">\n${limited.map(LSP.Diagnostic.pretty).join("\n")}${suffix}\n</diagnostics>`
+    }
+
+    if (
+      cfg.experimental?.hook?.codeHygiene?.warnConsoleLog &&
+      /\.(js|ts|jsx|tsx)$/i.test(filepath) &&
+      /console\.log\s*\(/.test(params.content)
+    ) {
+      output += "\n\n[Code hygiene] This file contains console.log. Consider removing before commit."
     }
 
     return {

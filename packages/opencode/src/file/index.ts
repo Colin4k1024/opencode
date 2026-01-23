@@ -115,6 +115,7 @@ export namespace File {
       "file.edited",
       z.object({
         file: z.string(),
+        tool: z.enum(["write", "edit"]).optional().describe("Tool that triggered the edit"),
       }),
     ),
   }

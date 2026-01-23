@@ -1,0 +1,21 @@
+Implement the current speckit feature based on tasks.md.
+
+## Instructions
+- If `.opencode/speckit/context.json` does not exist, stop and instruct the user to run `/speckit.init <feature-name>` first.
+- Read `.opencode/speckit/context.json` to get `featureId`.
+- Read `.opencode/speckit/specs/<featureId>/tasks.md`.
+- Translate the tasks into a session todo list:
+  - Each todo should be one actionable step
+  - Preserve the order
+  - Mark parallelizable tasks with a note like `[P]`
+  - Use `todowrite` to create/update the todo list with objects like:
+    - `{ "id": "1", "content": "…", "status": "pending" }`
+- Implement the todos using existing repo conventions:
+  - Make minimal, correct changes
+  - Add tests as specified by the task plan
+  - Run appropriate test/build commands and fix failures
+  - Update todo statuses as you progress
+
+## Rules
+- Follow tasks.md as the source of truth.
+- Do not switch git branches unless explicitly instructed by the user.

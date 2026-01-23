@@ -31,9 +31,11 @@ import { Flag } from "../flag/flag"
 import { ulid } from "ulid"
 import { spawn } from "child_process"
 import { Command } from "../command"
+import { LearnCommandHandler } from "../command/learn"
 import { $, fileURLToPath } from "bun"
 import { ConfigMarkdown } from "../config/markdown"
 import { SessionSummary } from "./summary"
+import { loadMemoryContext } from "./memory"
 import { NamedError } from "@opencode-ai/util/error"
 import { fn } from "@/util/fn"
 import { SessionProcessor } from "./processor"
@@ -267,6 +269,7 @@ export namespace SessionPrompt {
 
     let step = 0
     const session = await Session.get(sessionID)
+    const memoryContext = await loadMemoryContext()
     while (true) {
       SessionStatus.set(sessionID, { type: "busy" })
       log.info("loop", { step, sessionID })
@@ -594,7 +597,11 @@ export namespace SessionPrompt {
         agent,
         abort,
         sessionID,
-        system: [...(await SystemPrompt.environment()), ...(await SystemPrompt.custom())],
+        system: [
+          ...(memoryContext ? [`上一会话摘要：\n${memoryContext}`] : []),
+          ...(await SystemPrompt.environment()),
+          ...(await SystemPrompt.custom()),
+        ],
         messages: [
           ...MessageV2.toModelMessage(sessionMessages),
           ...(isLastStep
@@ -1593,6 +1600,34 @@ NOTE: At any point in time through this workflow you should feel free to ask the
   export async function command(input: CommandInput) {
     log.info("command", input)
     const command = await Command.get(input.command)
+    if (command.handler === "learn") {
+      const info = await LearnCommandHandler({
+        sessionID: input.sessionID,
+        arguments: input.arguments,
+      })
+      const model =
+        (await lastModel(input.sessionID)) ?? (await Provider.defaultModel())
+      const agentName = await Agent.defaultAgent()
+      const result = (await prompt({
+        sessionID: input.sessionID,
+        model,
+        agent: agentName,
+        parts: [
+          {
+            type: "text",
+            text: `Created skill: **${info.name}**\nDescription: ${info.description}\nLocation: \`${info.location}\`\n\nYou can load it with the skill tool.`,
+          },
+        ],
+      })) as MessageV2.WithParts
+      Bus.publish(Command.Event.Executed, {
+        name: input.command,
+        sessionID: input.sessionID,
+        arguments: input.arguments,
+        messageID: result.info.id,
+      })
+      return result
+    }
+
     const agentName = command.agent ?? input.agent ?? (await Agent.defaultAgent())
 
     const raw = input.arguments.match(argsRegex) ?? []

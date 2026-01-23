@@ -5,6 +5,17 @@ import { Instance } from "../project/instance"
 import { Identifier } from "../id/id"
 import PROMPT_INITIALIZE from "./template/initialize.txt"
 import PROMPT_REVIEW from "./template/review.txt"
+import PROMPT_PLAN from "./template/plan.txt"
+import PROMPT_BUILD_FIX from "./template/build-fix.txt"
+import PROMPT_TDD from "./template/tdd.txt"
+import PROMPT_SPECKIT_INIT from "./template/speckit-init.txt"
+import PROMPT_SPECKIT_CONSTITUTION from "./template/speckit-constitution.txt"
+import PROMPT_SPECKIT_SPECIFY from "./template/speckit-specify.txt"
+import PROMPT_SPECKIT_PLAN from "./template/speckit-plan.txt"
+import PROMPT_SPECKIT_TASKS from "./template/speckit-tasks.txt"
+import PROMPT_SPECKIT_IMPLEMENT from "./template/speckit-implement.txt"
+import PROMPT_SPECKIT_INGEST from "./template/speckit-ingest.txt"
+import PROMPT_SPECKIT_VIBE from "./template/speckit-vibe.txt"
 import { MCP } from "../mcp"
 
 export namespace Command {
@@ -32,6 +43,7 @@ export namespace Command {
       template: z.promise(z.string()).or(z.string()),
       subtask: z.boolean().optional(),
       hints: z.array(z.string()),
+      handler: z.string().optional().describe("Built-in handler: e.g. 'learn' for /learn"),
     })
     .meta({
       ref: "Command",
@@ -53,6 +65,19 @@ export namespace Command {
   export const Default = {
     INIT: "init",
     REVIEW: "review",
+    PLAN: "plan",
+    CODE_REVIEW: "code-review",
+    BUILD_FIX: "build-fix",
+    TDD: "tdd",
+    LEARN: "learn",
+    SPECKIT_INIT: "speckit.init",
+    SPECKIT_CONSTITUTION: "speckit.constitution",
+    SPECKIT_SPECIFY: "speckit.specify",
+    SPECKIT_PLAN: "speckit.plan",
+    SPECKIT_TASKS: "speckit.tasks",
+    SPECKIT_IMPLEMENT: "speckit.implement",
+    SPECKIT_INGEST: "speckit.ingest",
+    SPECKIT_VIBE: "speckit.vibe",
   } as const
 
   const state = Instance.state(async () => {
@@ -75,6 +100,124 @@ export namespace Command {
         },
         subtask: true,
         hints: hints(PROMPT_REVIEW),
+      },
+      [Default.PLAN]: {
+        name: Default.PLAN,
+        description: "have the planner agent break down requirements and suggest an implementation path",
+        agent: "planner",
+        get template() {
+          return PROMPT_PLAN
+        },
+        hints: hints(PROMPT_PLAN),
+      },
+      [Default.CODE_REVIEW]: {
+        name: Default.CODE_REVIEW,
+        description: "start code review with the code-reviewer agent",
+        agent: "code-reviewer",
+        get template() {
+          return PROMPT_REVIEW.replace("${path}", Instance.worktree)
+        },
+        subtask: true,
+        hints: hints(PROMPT_REVIEW),
+      },
+      [Default.BUILD_FIX]: {
+        name: Default.BUILD_FIX,
+        description: "fix build errors with the fix agent",
+        agent: "fix",
+        get template() {
+          return PROMPT_BUILD_FIX
+        },
+        hints: hints(PROMPT_BUILD_FIX),
+      },
+      [Default.TDD]: {
+        name: Default.TDD,
+        description: "start TDD workflow with the tdd-guide agent",
+        agent: "tdd-guide",
+        get template() {
+          return PROMPT_TDD
+        },
+        hints: hints(PROMPT_TDD),
+      },
+      [Default.LEARN]: {
+        name: Default.LEARN,
+        description: "extract patterns from this session into a new Skill",
+        handler: "learn",
+        get template() {
+          return "$ARGUMENTS"
+        },
+        hints: ["$ARGUMENTS"],
+      },
+      [Default.SPECKIT_INIT]: {
+        name: Default.SPECKIT_INIT,
+        description: "initialize a speckit feature workspace under .opencode/speckit/",
+        agent: "speckit",
+        get template() {
+          return PROMPT_SPECKIT_INIT
+        },
+        hints: hints(PROMPT_SPECKIT_INIT),
+      },
+      [Default.SPECKIT_CONSTITUTION]: {
+        name: Default.SPECKIT_CONSTITUTION,
+        description: "create/update .opencode/speckit/constitution.md",
+        agent: "speckit",
+        get template() {
+          return PROMPT_SPECKIT_CONSTITUTION
+        },
+        hints: hints(PROMPT_SPECKIT_CONSTITUTION),
+      },
+      [Default.SPECKIT_SPECIFY]: {
+        name: Default.SPECKIT_SPECIFY,
+        description: "generate/update spec.md for the current speckit feature",
+        agent: "speckit",
+        get template() {
+          return PROMPT_SPECKIT_SPECIFY
+        },
+        hints: hints(PROMPT_SPECKIT_SPECIFY),
+      },
+      [Default.SPECKIT_PLAN]: {
+        name: Default.SPECKIT_PLAN,
+        description: "generate/update plan.md for the current speckit feature",
+        agent: "speckit",
+        get template() {
+          return PROMPT_SPECKIT_PLAN
+        },
+        hints: hints(PROMPT_SPECKIT_PLAN),
+      },
+      [Default.SPECKIT_TASKS]: {
+        name: Default.SPECKIT_TASKS,
+        description: "generate/update tasks.md from plan.md for the current speckit feature",
+        agent: "speckit",
+        get template() {
+          return PROMPT_SPECKIT_TASKS
+        },
+        hints: hints(PROMPT_SPECKIT_TASKS),
+      },
+      [Default.SPECKIT_IMPLEMENT]: {
+        name: Default.SPECKIT_IMPLEMENT,
+        description: "implement tasks.md for the current speckit feature (hands off to coding agent)",
+        agent: "coding",
+        get template() {
+          return PROMPT_SPECKIT_IMPLEMENT
+        },
+        hints: hints(PROMPT_SPECKIT_IMPLEMENT),
+      },
+      [Default.SPECKIT_INGEST]: {
+        name: Default.SPECKIT_INGEST,
+        description: "ingest requirement docs (files/paste/urls) and write sources.md + requirements.md (REQ-IDs)",
+        agent: "speckit",
+        get template() {
+          return PROMPT_SPECKIT_INGEST
+        },
+        hints: hints(PROMPT_SPECKIT_INGEST),
+      },
+      [Default.SPECKIT_VIBE]: {
+        name: Default.SPECKIT_VIBE,
+        description: "doc-driven speckit vibecoding (clarify → requirements → spec/plan/tasks → auto implement)",
+        agent: "speckit-vibe",
+        get template() {
+          return PROMPT_SPECKIT_VIBE
+        },
+        hints: hints(PROMPT_SPECKIT_VIBE),
       },
     }
 

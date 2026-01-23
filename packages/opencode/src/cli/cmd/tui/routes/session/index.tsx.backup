@@ -1506,21 +1506,6 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
         {/* Current Step Info (when executing) */}
         <Show when={!isCompleted()}>
           <box flexDirection="column" gap={0}>
-            {/* Workflow Progress Header */}
-            <Show when={workflow}>
-              <text fg={theme.text}>
-                <span style={{ bold: true }}>Workflow: {workflow}</span>
-              </text>
-            </Show>
-
-            {/* Current Phase Display */}
-            <Show when={phase}>
-              <text fg={theme.text}>
-                Current Phase: {phaseLabels[phase!] || phase!}
-              </text>
-            </Show>
-
-            {/* Step Progress */}
             <Show when={stepIndex !== undefined && totalSteps !== undefined}>
               <text style={{ fg: theme.text }}>
                 Step {stepIndex}/{totalSteps}
@@ -1530,8 +1515,6 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
                 </Show>
               </text>
             </Show>
-
-            {/* Agent and Status */}
             <Show when={agent}>
               <text style={{ fg: theme.textMuted }}>Agent: @{agent}</text>
             </Show>

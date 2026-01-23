@@ -1,0 +1,20 @@
+Generate an actionable task breakdown from the current plan.
+
+## Instructions
+- If `.opencode/speckit/context.json` does not exist, stop and instruct the user to run `/speckit.init <feature-name>` first.
+- Read `.opencode/speckit/context.json` to get `featureId`.
+- Read `.opencode/speckit/specs/<featureId>/plan.md`.
+- If present, read `.opencode/speckit/specs/<featureId>/requirements.md` and ensure each task references at least one `REQ-###`.
+- Ensure `.opencode/speckit/specs/<featureId>/` exists.
+- Run bash: `mkdir -p .opencode/speckit/specs/<featureId>`
+- Write `.opencode/speckit/specs/<featureId>/tasks.md` with:
+  - Ordered tasks, grouped by phase and/or user story
+  - Dependencies between tasks
+  - Mark tasks that can be parallelized with `[P]`
+  - Each task includes `Implements: REQ-###, ...`
+  - Include concrete file paths where possible
+  - Include a test plan section (what commands to run, what to verify)
+  - Keep tasks small enough to implement in sequence
+
+## Rules
+- Only write/edit files under `.opencode/speckit/**`.

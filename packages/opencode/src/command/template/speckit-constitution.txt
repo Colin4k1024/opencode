@@ -1,0 +1,19 @@
+Create or update `.opencode/speckit/constitution.md`.
+
+Input: $ARGUMENTS
+
+## Instructions
+- Ensure `.opencode/speckit/` directory exists.
+  - Run bash: `mkdir -p .opencode/speckit`
+- If input is provided, incorporate it as explicit principles and governance.
+- If input is empty, generate a reasonable default constitution that covers:
+  - code quality and correctness
+  - testing standards
+  - UX consistency (when relevant)
+  - performance constraints (when relevant)
+  - security and secrets hygiene
+  - how to resolve trade-offs
+- Write the final constitution to `.opencode/speckit/constitution.md`.
+
+## Rules
+- Only write/edit files under `.opencode/speckit/**`.

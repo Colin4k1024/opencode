@@ -258,6 +258,13 @@ export function PermissionPrompt(props: { request: PermissionRequest }) {
                   <Match when={props.request.permission === "doom_loop"}>
                     <TextBody icon="⟳" title="Continue after repeated failures" />
                   </Match>
+                  <Match when={props.request.permission === "create_doc"}>
+                    <TextBody
+                      icon="📄"
+                      title={`Create doc file ` + (props.request.patterns?.[0] ?? "")}
+                      description="Creating .md or .txt outside README or allowPaths requires confirmation."
+                    />
+                  </Match>
                   <Match when={true}>
                     <TextBody icon="⚙" title={`Call tool ` + props.request.permission} />
                   </Match>

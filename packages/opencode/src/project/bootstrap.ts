@@ -11,6 +11,7 @@ import { Instance } from "./instance"
 import { Vcs } from "./vcs"
 import { Log } from "@/util/log"
 import { ShareNext } from "@/share/share-next"
+import { init as HookRunnerInit } from "../hook/runner"
 
 export async function InstanceBootstrap() {
   Log.Default.info("bootstrapping", { directory: Instance.directory })
@@ -18,6 +19,7 @@ export async function InstanceBootstrap() {
   Share.init()
   ShareNext.init()
   Format.init()
+  HookRunnerInit()
   await LSP.init()
   FileWatcher.init()
   File.init()

@@ -993,6 +993,26 @@ export namespace Config {
       instructions: z.array(z.string()).optional().describe("Additional instruction files or patterns to include"),
       layout: Layout.optional().describe("@deprecated Always uses stretch layout."),
       permission: Permission.optional(),
+      rules: z
+        .object({
+          noSecrets: z.boolean().optional().describe("Reject or ask when edit/write contains likely hardcoded secrets"),
+          tdd: z
+            .object({
+              enforce: z.boolean(),
+              coverage: z.number().min(0).max(100).optional(),
+            })
+            .optional()
+            .describe("Enforce TDD and optional coverage target in system prompt"),
+          gitCommitFormat: z
+            .enum(["conventional", "angular", "none"])
+            .optional()
+            .describe("Validate git commit -m format in bash tool"),
+          delegateToSubagent: z
+            .string()
+            .optional()
+            .describe("Path to .md or inline text: when to delegate to subagents; injected into system prompt"),
+        })
+        .optional(),
       tools: z.record(z.string(), z.boolean()).optional(),
       enterprise: z
         .object({
@@ -1027,6 +1047,18 @@ export namespace Config {
                 })
                 .array()
                 .optional(),
+              codeHygiene: z
+                .object({
+                  warnConsoleLog: z.boolean().optional().describe("Warn when written content contains console.log"),
+                })
+                .optional(),
+              docControl: z
+                .object({
+                  allowPaths: z.array(z.string()).optional().describe("Glob patterns for doc files that don't need create_doc ask (e.g. docs/**, CHANGELOG*)"),
+                  defaultPermission: z.enum(["ask", "deny"]).optional().describe("Default for create_doc when not in allowPaths"),
+                })
+                .optional(),
+              pushConfirm: z.boolean().optional().describe("Require extra confirmation before git push"),
             })
             .optional(),
           chatMaxRetries: z.number().optional().describe("Number of retries for chat completions on failure"),
@@ -1047,6 +1079,12 @@ export namespace Config {
             .positive()
             .optional()
             .describe("Timeout in milliseconds for model context protocol (MCP) requests"),
+          memory: z
+            .object({
+              persist: z.boolean().optional().describe("Persist session summary across sessions"),
+              maxSummaryTokens: z.number().optional().describe("Max tokens for the context summary (default 500)"),
+            })
+            .optional(),
         })
         .optional(),
     })
