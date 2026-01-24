@@ -603,7 +603,7 @@ export namespace SessionPrompt {
         sessionID,
         system: [
           ...(memoryContext ? [`上一会话摘要：\n${memoryContext}`] : []),
-          ...(await SystemPrompt.environment()),
+          ...(await SystemPrompt.environment(model)),
           ...(await SystemPrompt.custom()),
         ],
         messages: [
