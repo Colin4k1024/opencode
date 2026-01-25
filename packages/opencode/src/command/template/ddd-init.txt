@@ -1,0 +1,24 @@
+Initialize a Domain-Driven Design workspace under `.opencode/ddd/`.
+
+Input: $ARGUMENTS
+
+## Requirements
+- Determine `projectName` from the input. Treat `--branch` as a flag (remove it from the name).
+- Compute `projectId` as a slug for directory names:
+  - lowercase, hyphens for spaces
+  - keep leading numeric prefix if user provided one (e.g. `001-...`)
+  - remove characters that are not letters, numbers, or hyphens
+- Create directories:
+  - `.opencode/ddd/`
+  - `.opencode/ddd/inputs/`
+  - `.opencode/ddd/inputs/raw/`
+  - `.opencode/ddd/designs/`
+  - `.opencode/ddd/designs/<projectId>/`
+- Create/update `.opencode/ddd/context.json` with:
+  - `projectId`, `projectName`, `createdAt` (ms timestamp)
+  - if `--branch` flag is present: create and switch to git branch `<projectId>` and store `"branch": "<projectId>"`
+- Ensure `.opencode/ddd/ddd-constitution.md` exists; if missing, create a starter constitution with DDD principles and conventions.
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Only run bash for safe local operations (mkdir, git branch when requested).

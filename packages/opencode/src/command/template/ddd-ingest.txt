@@ -1,0 +1,38 @@
+Ingest requirement documents (files/paste/URLs) and create a traceable requirement list for the current DDD project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+
+## Outputs
+- `.opencode/ddd/inputs/sources.md`
+- `.opencode/ddd/designs/<projectId>/requirements.md`
+- Optional cached fetches: `.opencode/ddd/inputs/raw/*`
+
+## Instructions
+1) Read `.opencode/ddd/context.json` to get `projectId`.
+2) Create directories:
+   - Run bash: `mkdir -p .opencode/ddd/inputs/raw`
+   - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+3) Collect sources:
+   - From input, extract all URLs (http/https). For each URL:
+     - Fetch with `webfetch`.
+     - Save a cached copy under `.opencode/ddd/inputs/raw/` (use a safe slug filename).
+   - For any `@file` references present in the input, use `read` to re-read the file with line numbers so you can cite ranges precisely.
+   - If the user pasted raw text, treat it as a source labelled `pasted:<timestamp>`.
+4) Write `.opencode/ddd/inputs/sources.md` as a table with columns:
+   - SourceID, Kind(file/url/paste), Location, Notes
+5) Build `.opencode/ddd/designs/<projectId>/requirements.md`:
+   - Assign stable IDs `REQ-001`, `REQ-002`, ...
+   - Each REQ MUST include:
+     - **Statement**: one requirement, testable and unambiguous
+     - **Type**: functional / non-functional
+     - **Priority**: must/should/could
+     - **Source**: file/url/paste + section and for files include `path:lineStart-lineEnd`
+     - **Notes / Assumptions**: only if needed
+   - If something is unclear, still create a REQ but mark it with an explicit ambiguity note.
+   - Group requirements by domain area when possible.
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.

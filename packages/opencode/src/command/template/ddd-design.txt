@@ -1,0 +1,88 @@
+Generate a complete DDD design document by synthesizing all design artifacts.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If any of the following are missing, stop and instruct the user to run the corresponding command:
+  - `requirements.md` → `/ddd.ingest`
+  - `strategic-design.md` → `/ddd.strategic`
+  - `tactical-design.md` → `/ddd.tactical`
+  - `domain-services.md` → `/ddd.services`
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json`
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/strategic-design.md`
+  - `.opencode/ddd/designs/<projectId>/tactical-design.md`
+  - `.opencode/ddd/designs/<projectId>/domain-services.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+- Write `.opencode/ddd/designs/<projectId>/ddd-design.md` as a comprehensive DDD design document with:
+
+### 1. Executive Summary
+- Project overview
+- DDD approach summary
+- Key design decisions at a glance
+
+### 2. Requirements Summary
+- High-level requirements overview
+- Requirements by domain
+- Requirements by priority
+- Reference to full requirements.md
+
+### 3. Strategic Design Summary
+- Domain analysis (core, supporting, generic)
+- Bounded contexts overview
+- Context mapping summary
+- Key strategic decisions
+- Reference to full strategic-design.md
+
+### 4. Tactical Design Summary
+- Entities overview
+- Value objects overview
+- Aggregates overview
+- Domain services overview
+- Repositories overview
+- Domain events overview
+- Key tactical patterns
+- Reference to full tactical-design.md
+
+### 5. Service Design Summary
+- Application services overview
+- Domain services overview
+- Service boundaries
+- Service dependencies
+- Integration patterns
+- Reference to full domain-services.md
+
+### 6. Complete Design Document
+- Full strategic design section (from strategic-design.md)
+- Full tactical design section (from tactical-design.md)
+- Full service design section (from domain-services.md)
+- Cross-references between sections
+- Requirements traceability matrix
+
+### 7. Design Rationale
+- Why DDD was chosen
+- Key design decisions and trade-offs
+- Alternative approaches considered
+- Future evolution considerations
+
+### 8. Implementation Guidelines
+- How to implement this design
+- Technology stack recommendations (if applicable)
+- Migration strategy (if applicable)
+- Testing strategy aligned with DDD
+
+### 9. Glossary
+- Ubiquitous language terms
+- Domain-specific terminology
+- Acronyms and abbreviations
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Ensure all sections are well-integrated and consistent.
+- Maintain traceability to requirements (REQ-###) throughout.
+- Use mermaid diagrams from source documents.
+- Make the document self-contained but reference detailed documents.

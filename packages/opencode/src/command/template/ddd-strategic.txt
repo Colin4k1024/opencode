@@ -1,0 +1,52 @@
+Perform strategic DDD design analysis for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/requirements.md` does not exist, stop and instruct the user to run `/ddd.ingest` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/strategic-design.md` with:
+
+### 1. Domain Analysis
+- **Core Domain**: The most valuable and differentiating part of the business
+- **Supporting Domains**: Important but not differentiating
+- **Generic Domains**: Common problems solved with standard solutions
+- For each domain, list key business capabilities and why it's classified as such
+
+### 2. Bounded Contexts
+For each bounded context, provide:
+- **Name**: Clear, business-oriented name
+- **Purpose**: What business capability it provides
+- **Ubiquitous Language**: Key terms and their definitions
+- **Key Entities**: High-level entities (detailed design comes in tactical)
+- **Requirements Mapping**: Which REQ-### requirements are addressed
+
+### 3. Context Mapping
+Create a context map showing relationships between bounded contexts:
+- Use mermaid diagram to visualize:
+  - Bounded contexts as nodes
+  - Relationships as edges (Partnership, Shared Kernel, Customer-Supplier, Conformist, Anticorruption Layer, Separate Ways)
+  - Upstream/Downstream relationships
+- For each relationship, explain:
+  - Type of relationship
+  - Why this relationship exists
+  - Integration approach
+
+### 4. Strategic Design Decisions
+- Key architectural decisions
+- Trade-offs considered
+- Rationale for bounded context boundaries
+- Integration patterns chosen
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Use mermaid syntax for context mapping diagrams.

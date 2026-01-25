@@ -16,6 +16,13 @@ import PROMPT_SPECKIT_TASKS from "./template/speckit-tasks.txt"
 import PROMPT_SPECKIT_IMPLEMENT from "./template/speckit-implement.txt"
 import PROMPT_SPECKIT_INGEST from "./template/speckit-ingest.txt"
 import PROMPT_SPECKIT_VIBE from "./template/speckit-vibe.txt"
+import PROMPT_DDD_INIT from "./template/ddd-init.txt"
+import PROMPT_DDD_INGEST from "./template/ddd-ingest.txt"
+import PROMPT_DDD_STRATEGIC from "./template/ddd-strategic.txt"
+import PROMPT_DDD_TACTICAL from "./template/ddd-tactical.txt"
+import PROMPT_DDD_SERVICES from "./template/ddd-services.txt"
+import PROMPT_DDD_DESIGN from "./template/ddd-design.txt"
+import PROMPT_DDD_IMPLEMENT from "./template/ddd-implement.txt"
 import { MCP } from "../mcp"
 
 export namespace Command {
@@ -78,6 +85,13 @@ export namespace Command {
     SPECKIT_IMPLEMENT: "speckit.implement",
     SPECKIT_INGEST: "speckit.ingest",
     SPECKIT_VIBE: "speckit.vibe",
+    DDD_INIT: "ddd.init",
+    DDD_INGEST: "ddd.ingest",
+    DDD_STRATEGIC: "ddd.strategic",
+    DDD_TACTICAL: "ddd.tactical",
+    DDD_SERVICES: "ddd.services",
+    DDD_DESIGN: "ddd.design",
+    DDD_IMPLEMENT: "ddd.implement",
   } as const
 
   const state = Instance.state(async () => {
@@ -218,6 +232,69 @@ export namespace Command {
           return PROMPT_SPECKIT_VIBE
         },
         hints: hints(PROMPT_SPECKIT_VIBE),
+      },
+      [Default.DDD_INIT]: {
+        name: Default.DDD_INIT,
+        description: "initialize a DDD workspace under .opencode/ddd/",
+        agent: "ddd",
+        get template() {
+          return PROMPT_DDD_INIT
+        },
+        hints: hints(PROMPT_DDD_INIT),
+      },
+      [Default.DDD_INGEST]: {
+        name: Default.DDD_INGEST,
+        description: "ingest requirement docs (files/paste/urls) and write sources.md + requirements.md (REQ-IDs)",
+        agent: "ddd",
+        get template() {
+          return PROMPT_DDD_INGEST
+        },
+        hints: hints(PROMPT_DDD_INGEST),
+      },
+      [Default.DDD_STRATEGIC]: {
+        name: Default.DDD_STRATEGIC,
+        description: "perform strategic DDD design analysis (domains, bounded contexts, context mapping)",
+        agent: "ddd",
+        get template() {
+          return PROMPT_DDD_STRATEGIC
+        },
+        hints: hints(PROMPT_DDD_STRATEGIC),
+      },
+      [Default.DDD_TACTICAL]: {
+        name: Default.DDD_TACTICAL,
+        description: "perform tactical DDD design analysis (entities, value objects, aggregates, repositories, events)",
+        agent: "ddd",
+        get template() {
+          return PROMPT_DDD_TACTICAL
+        },
+        hints: hints(PROMPT_DDD_TACTICAL),
+      },
+      [Default.DDD_SERVICES]: {
+        name: Default.DDD_SERVICES,
+        description: "perform domain service design and service boundary analysis",
+        agent: "ddd",
+        get template() {
+          return PROMPT_DDD_SERVICES
+        },
+        hints: hints(PROMPT_DDD_SERVICES),
+      },
+      [Default.DDD_DESIGN]: {
+        name: Default.DDD_DESIGN,
+        description: "generate complete DDD design document by synthesizing all design artifacts",
+        agent: "ddd",
+        get template() {
+          return PROMPT_DDD_DESIGN
+        },
+        hints: hints(PROMPT_DDD_DESIGN),
+      },
+      [Default.DDD_IMPLEMENT]: {
+        name: Default.DDD_IMPLEMENT,
+        description: "automatically generate complete code implementation based on DDD design documents",
+        agent: "ddd-implement",
+        get template() {
+          return PROMPT_DDD_IMPLEMENT
+        },
+        hints: hints(PROMPT_DDD_IMPLEMENT),
       },
     }
 

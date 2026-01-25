@@ -1,0 +1,74 @@
+Perform domain service design and service boundary analysis for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/tactical-design.md` does not exist, stop and instruct the user to run `/ddd.tactical` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json`
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/strategic-design.md`
+  - `.opencode/ddd/designs/<projectId>/tactical-design.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/domain-services.md` with:
+
+### 1. Application Services
+For each application service, provide:
+- **Name**: Service name
+- **Bounded Context**: Which context it belongs to
+- **Purpose**: What use cases it orchestrates
+- **Operations**: Key operations with:
+  - Operation name
+  - Input parameters
+  - Output/return type
+  - Orchestration steps (high-level)
+  - Domain objects it coordinates
+- **Dependencies**: What repositories, domain services, or other application services it depends on
+- **Requirements**: REQ-### IDs that this service addresses
+
+### 2. Domain Services
+For each domain service (from tactical design, but with interface focus), provide:
+- **Name**: Service name
+- **Bounded Context**: Which context it belongs to
+- **Interface**: Method signatures
+- **Purpose**: Why it's a domain service (not an entity method)
+- **Dependencies**: What domain objects it works with
+- **Requirements**: REQ-### IDs that this service addresses
+
+### 3. Service Boundaries
+- **Service Boundaries**: Clear boundaries between services
+- **Service Responsibilities**: What each service is responsible for
+- **Service Interactions**: How services interact with each other
+- **Integration Points**: Where services integrate (events, direct calls, etc.)
+
+### 4. Service Dependency Graph
+Create a mermaid diagram showing:
+- All application services
+- All domain services
+- Dependencies between services
+- Dependencies on repositories
+- Event publishing/subscribing relationships
+
+### 5. Service Interface Definitions
+For each service interface, provide:
+- **Service Name**
+- **Interface Definition**: TypeScript-like or language-agnostic interface
+- **Method Signatures**: All public methods
+- **Error Handling**: How errors are handled
+- **Concurrency**: Any concurrency considerations
+
+### 6. Service Design Decisions
+- Key decisions about service boundaries
+- Trade-offs considered
+- Rationale for service organization
+- Integration patterns (synchronous vs asynchronous)
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference entities, aggregates, and domain services from tactical design.
+- Use mermaid diagrams to visualize service dependencies.

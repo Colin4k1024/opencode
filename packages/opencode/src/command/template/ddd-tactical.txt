@@ -1,0 +1,90 @@
+Perform tactical DDD design analysis for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/strategic-design.md` does not exist, stop and instruct the user to run `/ddd.strategic` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json`
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/strategic-design.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/tactical-design.md` with:
+
+### 1. Entities
+For each entity, provide:
+- **Name**: Entity name
+- **Bounded Context**: Which context it belongs to
+- **Identity**: How identity is established (natural key, surrogate key, composite key)
+- **Attributes**: Key attributes with types
+- **Behaviors**: Key business operations/methods
+- **Invariants**: Business rules that must always be true
+- **Requirements**: REQ-### IDs that this entity addresses
+
+### 2. Value Objects
+For each value object, provide:
+- **Name**: Value object name
+- **Bounded Context**: Which context it belongs to
+- **Attributes**: All attributes with types
+- **Immutability**: How immutability is ensured
+- **Validation Rules**: Constraints and validation logic
+- **Usage**: Where and how it's used
+
+### 3. Aggregates
+For each aggregate, provide:
+- **Name**: Aggregate name
+- **Aggregate Root**: The root entity
+- **Boundary**: What entities and value objects are included
+- **Invariants**: Business rules that must be consistent within the aggregate
+- **Consistency Boundary**: What must be consistent together
+- **Access Patterns**: How aggregates are accessed (through root only)
+- **Requirements**: REQ-### IDs that this aggregate addresses
+
+### 4. Domain Services
+For each domain service, provide:
+- **Name**: Service name
+- **Bounded Context**: Which context it belongs to
+- **Purpose**: Why it's a service (not an entity method)
+- **Operations**: Key operations with signatures
+- **Dependencies**: What it depends on
+- **Requirements**: REQ-### IDs that this service addresses
+
+### 5. Repositories
+For each repository, provide:
+- **Name**: Repository name
+- **Aggregate**: Which aggregate it manages
+- **Interface**: Key methods (findById, save, remove, etc.)
+- **Query Methods**: Specific query methods needed
+- **Requirements**: REQ-### IDs that this repository addresses
+
+### 6. Domain Events
+For each domain event, provide:
+- **Name**: Event name
+- **Bounded Context**: Which context it originates from
+- **Trigger**: What action triggers this event
+- **Payload**: What data is included
+- **Subscribers**: Which contexts/bounded contexts might be interested
+- **Requirements**: REQ-### IDs that this event addresses
+
+### 7. Factories
+For each factory, provide:
+- **Name**: Factory name
+- **Purpose**: What complex object it creates
+- **Creation Logic**: Steps to create the object
+- **Validation**: Validation performed during creation
+
+### 8. Tactical Design Patterns
+Document any additional tactical patterns used:
+- Specifications
+- Domain Services patterns
+- Any other DDD tactical patterns applied
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference bounded contexts from strategic design.
+- Use mermaid diagrams to show entity relationships and aggregate boundaries when helpful.

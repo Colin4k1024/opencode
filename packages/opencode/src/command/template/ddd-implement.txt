@@ -1,0 +1,180 @@
+Automatically generate complete code implementation based on DDD design documents.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If any of the following are missing, stop and instruct the user to run the corresponding command:
+  - `requirements.md` → `/ddd.ingest`
+  - `strategic-design.md` → `/ddd.strategic`
+  - `tactical-design.md` → `/ddd.tactical`
+  - `domain-services.md` → `/ddd.services`
+
+## Instructions
+
+### Phase 1: Read and Parse Design Documents
+1. Read `.opencode/ddd/context.json` to get `projectId`.
+2. Read all DDD design documents:
+   - `.opencode/ddd/designs/<projectId>/requirements.md`
+   - `.opencode/ddd/designs/<projectId>/strategic-design.md`
+   - `.opencode/ddd/designs/<projectId>/tactical-design.md`
+   - `.opencode/ddd/designs/<projectId>/domain-services.md`
+3. Parse the design documents to extract:
+   - Bounded contexts and their relationships
+   - Entities with attributes, behaviors, and invariants
+   - Value objects with validation rules
+   - Aggregates with boundaries and invariants
+   - Domain services with operations
+   - Repository interfaces
+   - Domain events
+   - Application services with operations
+   - Service dependencies
+
+### Phase 2: Detect Technology Stack
+1. Detect project type by checking for:
+   - TypeScript/Node.js: `package.json`, `tsconfig.json`
+   - Java/Spring Boot: `pom.xml`, `build.gradle`, `application.yml`
+   - Python: `pyproject.toml`, `requirements.txt`, `setup.py`
+   - Go: `go.mod`, `go.sum`
+2. Detect framework:
+   - NestJS: Check for `@nestjs/core` in package.json
+   - Spring Boot: Check for `spring-boot-starter` in pom.xml
+   - FastAPI: Check for `fastapi` in requirements.txt
+   - Gin/Echo: Check Go module imports
+3. Detect ORM:
+   - TypeORM, Prisma, Drizzle for TypeScript
+   - Hibernate, JPA for Java
+   - SQLAlchemy for Python
+   - GORM for Go
+4. Detect test framework:
+   - Jest, Vitest for TypeScript
+   - JUnit, TestNG for Java
+   - pytest for Python
+   - testing package for Go
+
+### Phase 3: Generate Code Structure
+1. Create directory structure based on detected technology stack and bounded contexts:
+   - For TypeScript/NestJS: `src/<bounded-context>/domain/`, `application/`, `infrastructure/`, `interfaces/`
+   - For Java/Spring Boot: `src/main/java/com/example/<bounded-context>/domain/`, `application/`, `infrastructure/`, `interfaces/`
+   - For Python: `src/<bounded-context>/domain/`, `application/`, `infrastructure/`, `interfaces/`
+   - For Go: `internal/<bounded-context>/domain/`, `application/`, `infrastructure/`, `interfaces/`
+2. Create test directory structure:
+   - `tests/unit/`, `tests/integration/`, `tests/e2e/`
+
+### Phase 4: Generate Domain Layer Code
+For each bounded context, generate:
+1. **Entities**: Create entity classes with:
+   - Unique identity
+   - Attributes with types
+   - Behavior methods
+   - Invariant checks
+   - Domain event publishing
+2. **Value Objects**: Create immutable value object classes with:
+   - Attributes
+   - Validation logic
+   - Value equality comparison
+3. **Aggregates**: Create aggregate root classes with:
+   - Aggregate boundary management
+   - Invariant enforcement
+   - Access control to aggregate entities
+4. **Domain Services**: Create domain service interfaces/classes with:
+   - Operation signatures
+   - Domain logic
+5. **Repository Interfaces**: Create repository interfaces with:
+   - CRUD methods
+   - Query methods
+   - Aggregate-specific methods
+6. **Domain Events**: Create domain event classes with:
+   - Event data
+   - Event metadata
+
+### Phase 5: Generate Application Layer Code
+1. **Application Services**: Create application service classes with:
+   - Use case orchestration
+   - Transaction management
+   - DTO conversion
+   - Exception handling
+2. **DTOs**: Create Data Transfer Objects:
+   - Command DTOs
+   - Query DTOs
+   - Response DTOs
+3. **Command/Query Handlers**: If using CQRS pattern:
+   - Command handlers
+   - Query handlers
+
+### Phase 6: Generate Infrastructure Layer Code
+1. **Repository Implementations**: Create repository implementations with:
+   - Database access logic
+   - ORM mappings
+   - Query implementations
+2. **Database Entities**: Create database entity classes (if using ORM)
+3. **External Service Clients**: Create clients for external services
+4. **Message Queue Integration**: Create message handlers (if applicable)
+5. **Cache Implementations**: Create cache adapters (if applicable)
+
+### Phase 7: Generate Interface Layer Code
+1. **REST API Controllers**: Create REST controllers with:
+   - Endpoint definitions
+   - Request/response handling
+   - Validation
+   - Authorization
+2. **GraphQL Resolvers**: If using GraphQL, create resolvers
+3. **Message Handlers**: Create message handlers for async communication
+
+### Phase 8: Generate Test Code
+1. **Unit Tests**: Create unit tests for:
+   - Entities (invariants, behaviors)
+   - Value objects (validation, equality)
+   - Aggregates (boundary, invariants)
+   - Domain services
+2. **Integration Tests**: Create integration tests for:
+   - Application services
+   - Repository implementations
+   - API endpoints
+3. **Test Utilities**: Create:
+   - Test data builders
+   - Mock factories
+   - Test fixtures
+
+### Phase 9: Compile and Test
+1. Run build/compile command based on detected project type:
+   - TypeScript: `npm run build` or `tsc --noEmit`
+   - Java/Maven: `mvn clean compile`
+   - Java/Gradle: `./gradlew build`
+   - Python: Check syntax with `python -m py_compile` or `mypy`
+   - Go: `go build ./...`
+2. Run test command:
+   - TypeScript: `npm test`
+   - Java/Maven: `mvn clean test`
+   - Java/Gradle: `./gradlew test`
+   - Python: `pytest` or `python -m pytest`
+   - Go: `go test ./...`
+3. If compilation or tests fail:
+   - Use `fix` agent to resolve errors
+   - Analyze error messages carefully
+   - Fix implementation or tests as needed
+   - Iterate until all tests pass (max 3 attempts)
+   - If errors persist after 3 attempts, report blocking issues
+
+### Phase 10: Code Quality
+1. Ensure code follows DDD principles:
+   - Domain logic in domain layer only
+   - No business logic in infrastructure layer
+   - Proper separation of concerns
+   - Ubiquitous language usage
+2. Verify code structure matches design documents
+3. Ensure all requirements (REQ-###) are addressed
+
+## Rules
+- Follow the DDD design documents as the source of truth
+- Generate code that strictly adheres to DDD principles
+- Use ubiquitous language from design documents consistently
+- Maintain proper layer separation (domain, application, infrastructure, interfaces)
+- Generate comprehensive tests with good coverage
+- Follow existing project conventions and code style
+- Do not switch git branches unless explicitly instructed by the user
+- If errors occur, use fix agent to resolve them iteratively
+- Reference REQ-### IDs in code comments where applicable
+- Ensure all generated code is production-ready, not prototypes
+- Generate proper error handling and validation
+- Include appropriate logging where needed
