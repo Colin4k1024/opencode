@@ -93,6 +93,7 @@ export namespace Agent {
     const result: Record<string, Info> = {
       build: {
         name: "build",
+        description: "The default agent. Executes tools based on configured permissions.",
         options: {},
         permission: PermissionNext.merge(
           defaults,
@@ -107,6 +108,7 @@ export namespace Agent {
       },
       plan: {
         name: "plan",
+        description: "Plan mode. Disallows all edit tools.",
         options: {},
         permission: PermissionNext.merge(
           defaults,
