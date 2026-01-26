@@ -15,6 +15,7 @@ import { Instance } from "../project/instance"
 import { Bus } from "../bus"
 import { ProviderTransform } from "../provider/transform"
 import { SystemPrompt } from "./system"
+import { InstructionPrompt } from "./instruction"
 import { Plugin } from "../plugin"
 import PROMPT_PLAN from "../session/prompt/plan.txt"
 import BUILD_SWITCH from "../session/prompt/build-switch.txt"
@@ -389,6 +390,7 @@ export namespace SessionPrompt {
           abort,
           callID: part.callID,
           extra: { bypassAgentCheck: true },
+          messages: msgs,
           async metadata(input) {
             await Session.updatePart({
               ...part,
@@ -564,6 +566,7 @@ export namespace SessionPrompt {
         tools: lastUser.tools,
         processor,
         bypassAgentCheck,
+        messages: msgs,
       })
 
       if (step === 1) {
@@ -604,7 +607,7 @@ export namespace SessionPrompt {
         system: [
           ...(memoryContext ? [`上一会话摘要：\n${memoryContext}`] : []),
           ...(await SystemPrompt.environment(model)),
-          ...(await SystemPrompt.custom()),
+          ...(await InstructionPrompt.system()),
         ],
         messages: [
           ...MessageV2.toModelMessages(sessionMessages, model),
@@ -657,6 +660,7 @@ export namespace SessionPrompt {
     tools?: Record<string, boolean>
     processor: SessionProcessor.Info
     bypassAgentCheck: boolean
+    messages: MessageV2.WithParts[]
   }) {
     using _ = log.time("resolveTools")
     const tools: Record<string, AITool> = {}
@@ -668,6 +672,7 @@ export namespace SessionPrompt {
       callID: options.toolCallId,
       extra: { model: input.model, bypassAgentCheck: input.bypassAgentCheck },
       agent: input.agent.name,
+      messages: input.messages,
       metadata: async (val: { title?: string; metadata?: any }) => {
         const match = input.processor.partFromToolCall(options.toolCallId)
         if (match && match.state.status === "running") {
@@ -1015,6 +1020,7 @@ export namespace SessionPrompt {
                       agent: input.agent!,
                       messageID: info.id,
                       extra: { bypassCwdCheck: true, model },
+                      messages: [],
                       metadata: async () => {},
                       ask: async () => {},
                     }
@@ -1076,6 +1082,7 @@ export namespace SessionPrompt {
                   agent: input.agent!,
                   messageID: info.id,
                   extra: { bypassCwdCheck: true },
+                  messages: [],
                   metadata: async () => {},
                   ask: async () => {},
                 }
