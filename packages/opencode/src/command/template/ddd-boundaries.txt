@@ -1,0 +1,75 @@
+Design service boundaries for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/app-services.md` does not exist, stop and instruct the user to run `/ddd.app-services` first.
+- If `.opencode/ddd/designs/<projectId>/domain-services-detailed.md` does not exist, stop and instruct the user to run `/ddd.domain-services` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/strategic-design.md`
+  - `.opencode/ddd/designs/<projectId>/app-services.md`
+  - `.opencode/ddd/designs/<projectId>/domain-services-detailed.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/boundaries.md` with:
+
+### 1. Service Boundaries
+- **Service Boundaries**: Clear boundaries between services:
+  - Application services boundaries
+  - Domain services boundaries
+  - How boundaries are enforced
+- **Service Responsibilities**: What each service is responsible for:
+  - Primary responsibilities
+  - Shared responsibilities (if any)
+  - Excluded responsibilities
+- **Boundary Rationale**: Why these boundaries were chosen
+
+### 2. Service Interactions
+- **Service Interactions**: How services interact with each other:
+  - Direct method calls
+  - Event-based communication
+  - Message queues
+  - API calls
+- **Interaction Patterns**: Common patterns used:
+  - Synchronous vs asynchronous
+  - Request/response vs publish/subscribe
+  - Orchestration vs choreography
+
+### 3. Integration Points
+- **Integration Points**: Where services integrate:
+  - Between bounded contexts
+  - With external systems
+  - With infrastructure services
+- **Integration Mechanisms**: How integration is implemented:
+  - REST APIs
+  - GraphQL
+  - Message queues
+  - Event streams
+  - Shared databases (avoid when possible)
+
+### 4. Service Dependency Graph
+Create a mermaid diagram showing:
+- All application services
+- All domain services
+- Dependencies between services
+- Dependencies on repositories
+- Event publishing/subscribing relationships
+- External service dependencies
+
+### 5. Service Design Decisions
+- **Key Decisions**: Important decisions about service boundaries
+- **Trade-offs**: What alternatives were considered
+- **Rationale**: Why these boundaries were chosen
+- **Evolution**: How boundaries might evolve
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference application services and domain services from previous design steps.
+- Use mermaid diagrams to visualize service dependencies.

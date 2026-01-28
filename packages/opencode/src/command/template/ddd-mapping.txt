@@ -1,0 +1,62 @@
+Create context mapping showing relationships between bounded contexts.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/contexts.md` does not exist, stop and instruct the user to run `/ddd.contexts` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/contexts.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/mapping.md` with:
+
+### 1. Context Map
+Create a mermaid diagram showing:
+- All bounded contexts as nodes
+- Relationships as edges with labels indicating relationship type
+- Upstream/Downstream relationships (U/D notation)
+- Direction of dependencies
+
+### 2. Relationship Types
+For each relationship between contexts, document:
+- **Contexts**: Which two contexts are related
+- **Relationship Type**: One of:
+  - **Partnership**: Two teams working together on shared goals
+  - **Shared Kernel**: Shared model with shared ownership
+  - **Customer-Supplier**: Upstream supplies downstream (U → D)
+  - **Conformist**: Downstream conforms to upstream model
+  - **Anticorruption Layer**: Downstream protects itself from upstream changes
+  - **Separate Ways**: Independent contexts with minimal integration
+- **Direction**: Upstream/Downstream relationship
+- **Why This Relationship**: Rationale for choosing this relationship type
+- **Integration Approach**: How the contexts integrate (events, API calls, shared database, etc.)
+
+### 3. Upstream/Downstream Analysis
+- **Upstream Contexts**: Contexts that others depend on
+- **Downstream Contexts**: Contexts that depend on others
+- **Independent Contexts**: Contexts with minimal dependencies
+- **Dependency Chain**: Critical dependency paths
+
+### 4. Integration Patterns
+For each relationship, specify:
+- **Integration Mechanism**: Events, direct API calls, shared database, etc.
+- **Data Flow**: How data flows between contexts
+- **Synchronization**: Synchronous vs asynchronous
+- **Error Handling**: How integration errors are handled
+
+### 5. Strategic Design Decisions
+- **Key Architectural Decisions**: Important decisions about context relationships
+- **Trade-offs Considered**: What alternatives were considered
+- **Rationale**: Why these relationships were chosen
+- **Evolution Path**: How relationships might evolve
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference bounded contexts from contexts.md.
+- Use mermaid syntax for context mapping diagrams.
+- Ensure all relationships are clearly documented.

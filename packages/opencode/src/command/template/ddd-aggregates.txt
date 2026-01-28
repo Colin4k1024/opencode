@@ -1,0 +1,59 @@
+Design aggregates for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/entities.md` does not exist, stop and instruct the user to run `/ddd.entities` first.
+- If `.opencode/ddd/designs/<projectId>/value-objects.md` does not exist, stop and instruct the user to run `/ddd.value-objects` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/contexts.md`
+  - `.opencode/ddd/designs/<projectId>/entities.md`
+  - `.opencode/ddd/designs/<projectId>/value-objects.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/aggregates.md` with:
+
+### 1. Aggregates
+For each aggregate, provide:
+- **Name**: Aggregate name
+- **Aggregate Root**: The root entity that serves as the entry point
+- **Boundary**: What entities and value objects are included:
+  - Entities within the aggregate
+  - Value objects within the aggregate
+  - What is explicitly excluded
+- **Invariants**: Business rules that must be consistent within the aggregate:
+  - Invariant description
+  - When it's enforced
+  - How it's enforced
+- **Consistency Boundary**: What must be consistent together:
+  - Transactional consistency requirements
+  - What can be eventually consistent
+- **Access Patterns**: How aggregates are accessed:
+  - Only through aggregate root
+  - No direct access to internal entities
+  - Root methods for all operations
+- **Size Guidelines**: Aggregate size considerations (keep aggregates small)
+- **Requirements**: REQ-### IDs that this aggregate addresses
+
+### 2. Aggregate Design Principles
+- **Single Responsibility**: Each aggregate has one clear responsibility
+- **Consistency**: Invariants are enforced within aggregate boundaries
+- **Size**: Aggregates are kept small for performance and clarity
+- **References**: Aggregates reference other aggregates by ID only
+
+### 3. Aggregate Relationships
+- **References to Other Aggregates**: How aggregates reference each other (by ID)
+- **No Direct Object References**: Why we avoid direct object references across aggregates
+- **Event-Based Communication**: How aggregates communicate via events
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference entities and value objects from previous design steps.
+- Use mermaid diagrams to show aggregate boundaries if helpful.

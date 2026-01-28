@@ -24,6 +24,9 @@ import PROMPT_REFACTOR_CLEANER from "./prompt/refactor-cleaner.txt"
 import PROMPT_DOC_UPDATER from "./prompt/doc-updater.txt"
 import PROMPT_SPECKIT from "./prompt/speckit.txt"
 import PROMPT_SPECKIT_VIBE from "./prompt/speckit-vibe.txt"
+import PROMPT_DDD_VIBE from "./prompt/ddd-vibe.txt"
+import PROMPT_PARSER from "./prompt/parser.txt"
+import PROMPT_PRODUCT_ASSET_EXTRACTOR from "./prompt/product-asset-extractor.txt"
 import { PermissionNext } from "@/permission/next"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@/global"
@@ -61,6 +64,7 @@ export namespace Agent {
 
     const defaults = PermissionNext.fromConfig({
       "*": "allow",
+      skill: "allow", // Explicitly allow all skills
       doom_loop: "ask",
       external_directory: {
         "*": "ask",
@@ -400,6 +404,98 @@ export namespace Agent {
           user,
         ),
         prompt: PROMPT_SPECKIT_VIBE,
+        options: {},
+        mode: "primary",
+        native: true,
+      },
+      "ddd-vibe": {
+        name: "ddd-vibe",
+        description: `Interactive DDD vibecoding orchestrator: ingest requirement docs, decompose into REQ-IDs with strict traceability, clarify gaps, generate complete DDD design artifacts (strategic/tactical/services), then auto-implement via ddd-implement agent.`,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            read: "allow",
+            glob: "allow",
+            grep: "allow",
+            list: "allow",
+            bash: "allow",
+            webfetch: "allow",
+            question: "allow",
+            orchestrate: "allow",
+            task: "allow",
+            // ddd-vibe itself should not author code; it may write artifacts if needed
+            edit: {
+              "*": "deny",
+              ".opencode/ddd/**": "allow",
+            },
+            write: "allow",
+            external_directory: { [Truncate.DIR]: "allow", [Truncate.GLOB]: "allow" },
+          }),
+          user,
+        ),
+        prompt: PROMPT_DDD_VIBE,
+        options: {},
+        mode: "primary",
+        native: true,
+      },
+      parser: {
+        name: "parser",
+        description: `G6 JSON parser orchestrator: parse G6 design files, analyze dependencies, split into implementation tasks by module and node type, generate plan file, generate TODOs, then call coding agent for full implementation workflow (code → tests → commit).`,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            read: "allow",
+            glob: "allow",
+            grep: "allow",
+            list: "allow",
+            bash: "allow",
+            webfetch: "allow",
+            question: "allow",
+            skill: "allow",
+            task: "allow",
+            todoread: "allow",
+            todowrite: "allow",
+            // parser itself should not author code; it delegates to coding agent
+            edit: {
+              "*": "deny",
+              ".opencode/plans/**": "allow",
+              ".opencode/g6/**": "allow",
+            },
+            write: {
+              "*": "deny",
+              ".opencode/plans/**": "allow",
+              ".opencode/g6/**": "allow",
+            },
+            external_directory: { [Truncate.DIR]: "allow", [Truncate.GLOB]: "allow" },
+          }),
+          user,
+        ),
+        prompt: PROMPT_PARSER,
+        options: {},
+        mode: "primary",
+        native: true,
+      },
+      "product-asset-extractor": {
+        name: "product-asset-extractor",
+        description: `Parse Word or Markdown documents to extract product assets (layout assets, page assets) and generate structured JSON output.`,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            read: "allow",
+            write: "allow",
+            glob: "allow",
+            grep: "allow",
+            list: "allow",
+            skill: "allow",
+            bash: "allow",
+            external_directory: { [Truncate.DIR]: "allow", [Truncate.GLOB]: "allow" },
+          }),
+          user,
+        ),
+        prompt: PROMPT_PRODUCT_ASSET_EXTRACTOR,
         options: {},
         mode: "primary",
         native: true,

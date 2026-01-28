@@ -1,0 +1,58 @@
+Design value objects for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/contexts.md` does not exist, stop and instruct the user to run `/ddd.contexts` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/contexts.md`
+  - `.opencode/ddd/designs/<projectId>/entities.md` (if exists)
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/value-objects.md` with:
+
+### 1. Value Objects
+For each value object, provide:
+- **Name**: Value object name
+- **Bounded Context**: Which context it belongs to
+- **Attributes**: All attributes with types and descriptions
+- **Immutability**: How immutability is ensured:
+  - Immutable properties
+  - No setters or mutable methods
+  - Copy-on-modify pattern (if applicable)
+- **Validation Rules**: Constraints and validation logic:
+  - Validation rules
+  - When validation occurs
+  - Error handling
+- **Value Equality**: How equality is determined (by value, not identity)
+- **Usage**: Where and how it's used:
+  - As entity attributes
+  - As method parameters
+  - As return values
+  - In aggregates
+- **Examples**: Example values and usage
+
+### 2. Value Object Design Patterns
+- **Composition**: How value objects compose other value objects
+- **Validation**: Centralized validation logic
+- **Factory Methods**: How value objects are created
+
+### 3. Common Value Objects
+Document common value objects that might be reused:
+- **Money**: Currency and amount
+- **Address**: Physical address
+- **Email**: Email address with validation
+- **Date Range**: Start and end dates
+- Others as needed
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference bounded contexts from contexts.md.
+- Ensure all value objects are truly immutable.

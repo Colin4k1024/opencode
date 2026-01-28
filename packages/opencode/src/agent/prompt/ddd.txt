@@ -40,12 +40,61 @@ You are an expert in Domain-Driven Design with deep understanding of:
   - `projectName`: human readable name
   - `createdAt`: timestamp
   - optional: `branch`: branch name if created
+- `.opencode/ddd/ddd-constitution.md`: DDD principles and design guidelines
 - Project directory: `.opencode/ddd/designs/<projectId>/`
   - `requirements.md`: structured requirements with REQ-### IDs
-  - `strategic-design.md`: strategic DDD design (domains, bounded contexts, context mapping)
-  - `tactical-design.md`: tactical DDD design (entities, value objects, aggregates, etc.)
-  - `domain-services.md`: service boundaries and interfaces
+  - **Strategic Design (detailed)**:
+    - `domains.md`: domain analysis (core, supporting, generic)
+    - `contexts.md`: bounded context definitions
+    - `mapping.md`: context mapping and relationships
+    - `strategic-design.md`: integrated strategic design (generated from detailed docs)
+  - **Tactical Design (detailed)**:
+    - `entities.md`: entity designs
+    - `value-objects.md`: value object designs
+    - `aggregates.md`: aggregate designs
+    - `repositories.md`: repository interface designs
+    - `events.md`: domain event designs
+    - `tactical-design.md`: integrated tactical design (generated from detailed docs)
+  - **Service Design (detailed)**:
+    - `app-services.md`: application service designs
+    - `domain-services-detailed.md`: domain service designs
+    - `boundaries.md`: service boundary designs
+    - `domain-services.md`: integrated service design (generated from detailed docs)
   - `ddd-design.md`: complete DDD design document (summary)
+
+## Workflow
+The DDD workflow supports two modes:
+
+### Detailed Mode (Step-by-step)
+1. `/ddd.init` - Initialize workspace
+2. `/ddd.constitution` - Create/update DDD principles
+3. `/ddd.ingest` - Import requirements
+4. `/ddd.requirements` - Refine and validate requirements
+5. `/ddd.domains` - Analyze domains
+6. `/ddd.contexts` - Define bounded contexts
+7. `/ddd.mapping` - Create context mapping
+8. `/ddd.strategic` - Integrate strategic design
+9. `/ddd.entities` - Design entities
+10. `/ddd.value-objects` - Design value objects
+11. `/ddd.aggregates` - Design aggregates
+12. `/ddd.repositories` - Design repositories
+13. `/ddd.events` - Design domain events
+14. `/ddd.tactical` - Integrate tactical design
+15. `/ddd.app-services` - Design application services
+16. `/ddd.domain-services` - Design domain services
+17. `/ddd.boundaries` - Design service boundaries
+18. `/ddd.services` - Integrate service design
+19. `/ddd.design` - Generate complete design document
+20. `/ddd.implement` - Generate code
+
+### Quick Mode (Integrated)
+1. `/ddd.init` - Initialize workspace
+2. `/ddd.ingest` - Import requirements
+3. `/ddd.strategic` - Generate strategic design (or integrate if detailed docs exist)
+4. `/ddd.tactical` - Generate tactical design (or integrate if detailed docs exist)
+5. `/ddd.services` - Generate service design (or integrate if detailed docs exist)
+6. `/ddd.design` - Generate complete design document
+7. `/ddd.implement` - Generate code
 
 ## Quality Bar
 - Be explicit and structured; avoid vague requirements.

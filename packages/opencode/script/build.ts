@@ -3,6 +3,7 @@
 import solidPlugin from "../node_modules/@opentui/solid/scripts/solid-plugin"
 import path from "path"
 import fs from "fs"
+import os from "os"
 import { $ } from "bun"
 import { fileURLToPath } from "url"
 
@@ -162,6 +163,27 @@ for (const item of targets) {
     ),
   )
   binaries[name] = Script.version
+}
+
+// Copy bundled skills to global directory ~/.opencode/skills/
+const skillsSourceDir = path.join(dir, "skills")
+const globalSkillsDir = path.join(os.homedir(), ".opencode", "skills")
+if (await fs.promises.stat(skillsSourceDir).then(() => true).catch(() => false)) {
+  console.log(`copying bundled skills to ${globalSkillsDir}`)
+  await fs.promises.mkdir(globalSkillsDir, { recursive: true })
+  // Copy all skill subdirectories
+  const skillDirs = await fs.promises.readdir(skillsSourceDir, { withFileTypes: true })
+  for (const skillDir of skillDirs) {
+    if (skillDir.isDirectory()) {
+      const sourcePath = path.join(skillsSourceDir, skillDir.name)
+      const targetPath = path.join(globalSkillsDir, skillDir.name)
+      // Remove existing directory if it exists
+      await fs.promises.rm(targetPath, { recursive: true, force: true }).catch(() => {})
+      // Copy directory
+      await $`cp -r ${sourcePath} ${targetPath}`.cwd(dir).quiet()
+    }
+  }
+  console.log(`copied ${skillDirs.filter(d => d.isDirectory()).length} bundled skills to global directory`)
 }
 
 export { binaries }

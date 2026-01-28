@@ -1,0 +1,60 @@
+Design repositories for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/aggregates.md` does not exist, stop and instruct the user to run `/ddd.aggregates` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/aggregates.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/repositories.md` with:
+
+### 1. Repositories
+For each repository, provide:
+- **Name**: Repository name
+- **Aggregate**: Which aggregate this repository manages
+- **Bounded Context**: Which context it belongs to
+- **Interface**: Key methods:
+  - `findById(id)`: Find aggregate by ID
+  - `save(aggregate)`: Save aggregate
+  - `remove(id)`: Remove aggregate
+  - Other standard methods
+- **Query Methods**: Specific query methods needed:
+  - Method name
+  - Parameters
+  - Return type
+  - Query criteria
+- **Persistence Strategy**: How aggregates are persisted:
+  - Database type (relational, document, etc.)
+  - Mapping strategy
+  - Concurrency handling
+- **Requirements**: REQ-### IDs that this repository addresses
+
+### 2. Repository Design Principles
+- **Interface in Domain Layer**: Repository interface is defined in domain layer
+- **Implementation in Infrastructure**: Concrete implementation in infrastructure layer
+- **Return Domain Objects**: Methods return domain objects, not database entities
+- **Aggregate Root Only**: Only aggregate roots have repositories
+
+### 3. Query Patterns
+- **Simple Queries**: Standard findById, findAll patterns
+- **Complex Queries**: Specification pattern or query objects
+- **Performance Considerations**: How to handle large result sets
+
+### 4. Transaction Management
+- **Unit of Work**: How transactions are managed
+- **Concurrency**: Optimistic vs pessimistic locking
+- **Consistency**: How consistency is maintained
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference aggregates from aggregates.md.
+- Keep repository interfaces focused on aggregate persistence.

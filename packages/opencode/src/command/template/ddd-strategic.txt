@@ -1,4 +1,4 @@
-Perform strategic DDD design analysis for the current project.
+Integrate strategic DDD design documents into a complete strategic design document.
 
 Input: $ARGUMENTS
 
@@ -7,13 +7,28 @@ Input: $ARGUMENTS
 - If `.opencode/ddd/designs/<projectId>/requirements.md` does not exist, stop and instruct the user to run `/ddd.ingest` first.
 
 ## Instructions
-- Read:
-  - `.opencode/ddd/context.json`
-  - `.opencode/ddd/ddd-constitution.md` (if exists)
-  - `.opencode/ddd/designs/<projectId>/requirements.md`
+- Read `.opencode/ddd/context.json` to get `projectId`.
+- Check if the following detailed design documents exist:
+  - `.opencode/ddd/designs/<projectId>/domains.md`
+  - `.opencode/ddd/designs/<projectId>/contexts.md`
+  - `.opencode/ddd/designs/<projectId>/mapping.md`
+- If any of these detailed documents exist, read them and integrate their content.
+- If none of these detailed documents exist, you can either:
+  - Option 1: Generate the complete strategic design directly (backward compatibility)
+  - Option 2: Stop and instruct the user to run the detailed commands first:
+    - `/ddd.domains` for domain analysis
+    - `/ddd.contexts` for bounded contexts
+    - `/ddd.mapping` for context mapping
 - Ensure `.opencode/ddd/designs/<projectId>/` exists.
   - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
-- Write `.opencode/ddd/designs/<projectId>/strategic-design.md` with:
+- Write `.opencode/ddd/designs/<projectId>/strategic-design.md` by:
+  - If detailed documents exist: Integrate content from `domains.md`, `contexts.md`, and `mapping.md` into a cohesive strategic design document
+  - If detailed documents don't exist: Generate complete strategic design following the structure below
+  - Ensure all sections are well-integrated and consistent
+  - Maintain traceability to requirements (REQ-###) throughout
+
+### Document Structure
+The integrated strategic design document should include:
 
 ### 1. Domain Analysis
 - **Core Domain**: The most valuable and differentiating part of the business
@@ -50,3 +65,4 @@ Create a context map showing relationships between bounded contexts:
 - Only write/edit files under `.opencode/ddd/**`.
 - Reference requirements by REQ-### IDs throughout the document.
 - Use mermaid syntax for context mapping diagrams.
+- When integrating from detailed documents, preserve all important details and ensure consistency.

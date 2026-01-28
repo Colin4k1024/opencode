@@ -1,0 +1,54 @@
+Design entities for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/contexts.md` does not exist, stop and instruct the user to run `/ddd.contexts` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/contexts.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/entities.md` with:
+
+### 1. Entities
+For each entity, provide:
+- **Name**: Entity name
+- **Bounded Context**: Which context it belongs to
+- **Identity**: How identity is established:
+  - Natural key (business identifier)
+  - Surrogate key (technical identifier)
+  - Composite key (multiple attributes)
+- **Attributes**: Key attributes with types and descriptions
+- **Behaviors**: Key business operations/methods:
+  - Method name
+  - Parameters
+  - Return type
+  - Business logic description
+- **Invariants**: Business rules that must always be true:
+  - Invariant description
+  - When it's enforced
+  - How it's enforced
+- **Lifecycle**: Entity lifecycle states (if applicable)
+- **Requirements**: REQ-### IDs that this entity addresses
+
+### 2. Entity Relationships
+- **Relationships**: How entities relate to each other
+- **References**: How entities reference other entities (by ID, direct reference, etc.)
+- **Ownership**: Which entity owns which relationships
+
+### 3. Entity Design Patterns
+- **Factory Methods**: How entities are created
+- **Validation**: Where and how validation occurs
+- **State Management**: How entity state is managed
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference bounded contexts from contexts.md.
+- Use mermaid diagrams to show entity relationships if helpful.

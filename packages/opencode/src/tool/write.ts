@@ -28,6 +28,15 @@ export const WriteTool = Tool.define("write", {
     const filepath = path.isAbsolute(params.filePath) ? params.filePath : path.join(Instance.directory, params.filePath)
     await assertExternalDirectory(ctx, filepath)
 
+    const normalizedPath = filepath.replace(/\\/g, "/")
+    const isG6NodeCache =
+      normalizedPath.includes(".opencode/g6/") && normalizedPath.includes("/nodes/") && normalizedPath.endsWith(".json")
+    if (isG6NodeCache && params.content.trim().length === 0) {
+      throw new Error(
+        "G6 node cache files must not be empty. Provide the full Level 4 JSON as content (node, outgoingEdges, incomingEdges, dependencies, implementationRequirements)."
+      )
+    }
+
     const file = Bun.file(filepath)
     const exists = await file.exists()
     const contentOld = exists ? await file.text() : ""

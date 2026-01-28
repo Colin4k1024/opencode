@@ -1,0 +1,61 @@
+Design application services for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/tactical-design.md` does not exist, stop and instruct the user to run `/ddd.tactical` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/strategic-design.md`
+  - `.opencode/ddd/designs/<projectId>/tactical-design.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/app-services.md` with:
+
+### 1. Application Services
+For each application service, provide:
+- **Name**: Service name
+- **Bounded Context**: Which context it belongs to
+- **Purpose**: What use cases it orchestrates
+- **Operations**: Key operations with:
+  - **Operation Name**: Method name
+  - **Input Parameters**: Command/query parameters
+  - **Output/Return Type**: What is returned
+  - **Orchestration Steps**: High-level steps:
+    1. Validate input
+    2. Load aggregates
+    3. Execute domain logic
+    4. Persist changes
+    5. Publish events
+    6. Return result
+  - **Domain Objects**: Which domain objects it coordinates
+- **Dependencies**: What it depends on:
+  - Repositories
+  - Domain services
+  - Other application services
+  - External services
+- **Transaction Management**: How transactions are handled
+- **Error Handling**: How errors are handled and returned
+- **Requirements**: REQ-### IDs that this service addresses
+
+### 2. Application Service Design Principles
+- **Orchestration Only**: Application services orchestrate, don't contain business logic
+- **Thin Layer**: Keep application services thin
+- **Use Case Focus**: Each operation represents a use case
+- **Transaction Boundaries**: Application services manage transaction boundaries
+
+### 3. Command/Query Separation
+- **Commands**: Operations that modify state
+- **Queries**: Operations that read state
+- **CQRS Considerations**: Whether CQRS pattern is used
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference aggregates, repositories, and domain services from tactical design.
+- Keep application services focused on orchestration, not business logic.

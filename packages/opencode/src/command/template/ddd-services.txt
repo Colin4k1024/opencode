@@ -1,4 +1,4 @@
-Perform domain service design and service boundary analysis for the current project.
+Integrate service design documents into a complete service design document.
 
 Input: $ARGUMENTS
 
@@ -7,14 +7,32 @@ Input: $ARGUMENTS
 - If `.opencode/ddd/designs/<projectId>/tactical-design.md` does not exist, stop and instruct the user to run `/ddd.tactical` first.
 
 ## Instructions
+- Read `.opencode/ddd/context.json` to get `projectId`.
+- Check if the following detailed design documents exist:
+  - `.opencode/ddd/designs/<projectId>/app-services.md`
+  - `.opencode/ddd/designs/<projectId>/domain-services-detailed.md`
+  - `.opencode/ddd/designs/<projectId>/boundaries.md`
+- If any of these detailed documents exist, read them and integrate their content.
+- If none of these detailed documents exist, you can either:
+  - Option 1: Generate the complete service design directly (backward compatibility)
+  - Option 2: Stop and instruct the user to run the detailed commands first:
+    - `/ddd.app-services` for application services
+    - `/ddd.domain-services` for domain services
+    - `/ddd.boundaries` for service boundaries
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
 - Read:
-  - `.opencode/ddd/context.json`
   - `.opencode/ddd/designs/<projectId>/requirements.md`
   - `.opencode/ddd/designs/<projectId>/strategic-design.md`
   - `.opencode/ddd/designs/<projectId>/tactical-design.md`
-- Ensure `.opencode/ddd/designs/<projectId>/` exists.
-  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
-- Write `.opencode/ddd/designs/<projectId>/domain-services.md` with:
+- Write `.opencode/ddd/designs/<projectId>/domain-services.md` by:
+  - If detailed documents exist: Integrate content from `app-services.md`, `domain-services-detailed.md`, and `boundaries.md` into a cohesive service design document
+  - If detailed documents don't exist: Generate complete service design following the structure below
+  - Ensure all sections are well-integrated and consistent
+  - Maintain traceability to requirements (REQ-###) throughout
+
+### Document Structure
+The integrated service design document should include:
 
 ### 1. Application Services
 For each application service, provide:

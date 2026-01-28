@@ -1,4 +1,4 @@
-Perform tactical DDD design analysis for the current project.
+Integrate tactical DDD design documents into a complete tactical design document.
 
 Input: $ARGUMENTS
 
@@ -7,13 +7,35 @@ Input: $ARGUMENTS
 - If `.opencode/ddd/designs/<projectId>/strategic-design.md` does not exist, stop and instruct the user to run `/ddd.strategic` first.
 
 ## Instructions
-- Read:
-  - `.opencode/ddd/context.json`
-  - `.opencode/ddd/designs/<projectId>/requirements.md`
-  - `.opencode/ddd/designs/<projectId>/strategic-design.md`
+- Read `.opencode/ddd/context.json` to get `projectId`.
+- Check if the following detailed design documents exist:
+  - `.opencode/ddd/designs/<projectId>/entities.md`
+  - `.opencode/ddd/designs/<projectId>/value-objects.md`
+  - `.opencode/ddd/designs/<projectId>/aggregates.md`
+  - `.opencode/ddd/designs/<projectId>/repositories.md`
+  - `.opencode/ddd/designs/<projectId>/events.md`
+- If any of these detailed documents exist, read them and integrate their content.
+- If none of these detailed documents exist, you can either:
+  - Option 1: Generate the complete tactical design directly (backward compatibility)
+  - Option 2: Stop and instruct the user to run the detailed commands first:
+    - `/ddd.entities` for entities
+    - `/ddd.value-objects` for value objects
+    - `/ddd.aggregates` for aggregates
+    - `/ddd.repositories` for repositories
+    - `/ddd.events` for domain events
 - Ensure `.opencode/ddd/designs/<projectId>/` exists.
   - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
-- Write `.opencode/ddd/designs/<projectId>/tactical-design.md` with:
+- Read:
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/strategic-design.md`
+- Write `.opencode/ddd/designs/<projectId>/tactical-design.md` by:
+  - If detailed documents exist: Integrate content from `entities.md`, `value-objects.md`, `aggregates.md`, `repositories.md`, and `events.md` into a cohesive tactical design document
+  - If detailed documents don't exist: Generate complete tactical design following the structure below
+  - Ensure all sections are well-integrated and consistent
+  - Maintain traceability to requirements (REQ-###) throughout
+
+### Document Structure
+The integrated tactical design document should include:
 
 ### 1. Entities
 For each entity, provide:

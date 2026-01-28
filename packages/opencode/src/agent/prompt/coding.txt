@@ -72,28 +72,65 @@
 
 ### Phase 1: Analyze TODO (分析 TODO) - MANDATORY
 
+**CRITICAL: Exit Conditions and Progress Tracking**
+
+Before starting Phase 1, be aware of these exit conditions and progress tracking requirements:
+
+- **Phase 1 Timeout**: If Phase 1 total time exceeds 15 minutes, save current progress and report what was accomplished
+- **Consecutive Failures**: If 3 consecutive steps fail, report the error and exit gracefully
+- **No TODOs Found**: If no TODOs are found in step 2, report this clearly and proceed directly to Phase 2 (skip remaining Phase 1 steps)
+- **Progress Reporting**: After each major step (2, 3, 4, 6), report progress:
+  - Step 2: Report number of TODOs found
+  - Step 3: Report number of TODOs processed (X/Y)
+  - Step 4: Report number of steps parsed
+  - Step 6: Report complexity analysis results
+- **Timeout Checkpoints**: Monitor time spent on each step:
+  - Step 2 (grep): If exceeds 5 minutes, report progress and continue
+  - Step 3 (read files): If exceeds 10 minutes total, report processed count and continue with remaining or skip
+  - Step 4 (parse steps): If exceeds 5 minutes, report progress and continue
+
 1. **Query Memory for Previous TODO Patterns** (if memory tool available)
+   - **CRITICAL**: If memory tool is NOT available, skip this step and proceed to step 2
+   - **Timeout**: If memory tool call exceeds 30 seconds, record timeout and continue (do not wait)
+   - **Error Handling**: If memory tool returns an error, log the error and continue (do not fail)
    - Use memory tool to query: "TODO completion patterns for [project type]"
    - Use memory tool to query: "Similar TODO tasks completed in this codebase"
    - Review previous approaches and learn from them
+   - **Progress**: Report if memory queries were successful, timed out, or skipped
 
 2. **Search Code Comments**
    - Use `grep` tool to search for TODO/FIXME/XXX comments in code
    - Pattern: `grep -rn "TODO\|FIXME\|XXX" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.py" --include="*.java" --include="*.go" --include="*.rs" .`
+   - **Timeout Check**: If grep execution exceeds 5 minutes, report progress and continue with partial results
    - Extract TODO descriptions, file locations, and line numbers
    - Parse TODO format: `// TODO: description` or `# TODO: description`
    - Store each TODO with: file path, line number, description
+   - **Progress Report (MANDATORY)**: After completing this step, report: "Found [N] TODO tasks in code comments"
+   - **Large Result Handling**: If more than 100 TODOs are found, report: "Found [N] TODOs - processing in batches to avoid timeout"
+   - **No TODOs Found**: If no TODOs are found, report clearly and proceed directly to Phase 2 (skip steps 3-7)
 
 3. **Read TODO Context and Implementation Steps**
-   - For each TODO found, use `read` tool to read the file containing the TODO
-   - Read the TODO comment line and the following 10-20 lines (or until next code block/comment block)
-   - Extract the complete context including:
-     - The TODO comment itself
-     - Any implementation steps or detailed instructions in subsequent comment lines
-     - Related code context around the TODO
+   - **Batch Processing**: Process TODOs in batches of 20 to avoid timeout
+   - **Progress Tracking**: Track processed count (X/Y) and report after each batch
+   - **Timeout Check**: 
+     - If total time exceeds 10 minutes, report: "Processed [X] of [Y] TODOs in 10 minutes, continuing with remaining"
+     - Each individual TODO read should not exceed 1 minute
+   - For each TODO found (in batches):
+     - Use `read` tool to read the file containing the TODO
+     - **Error Handling**: If file cannot be read (not found, permission denied, etc.):
+       * Record the error: "TODO at [file:line] - [error type]: [error message]"
+       * Mark TODO as "context unavailable" and continue with next TODO
+       * Do NOT fail the entire phase due to individual file read errors
+     - Read the TODO comment line and the following 10-20 lines (or until next code block/comment block)
+     - Extract the complete context including:
+       - The TODO comment itself
+       - Any implementation steps or detailed instructions in subsequent comment lines
+       - Related code context around the TODO
    - **CRITICAL**: Many TODOs contain implementation steps in the lines following the TODO comment. Always read these lines to capture the full instructions.
+   - **Progress Report (MANDATORY)**: After processing all batches, report: "Read context for [X] of [Y] TODOs ([Z] failed due to errors)"
 
 4. **Parse Implementation Steps from TODO Comments**
+   - **Timeout Check**: If parsing exceeds 5 minutes, report progress and continue
    - Analyze the TODO comment and its following lines to extract implementation steps
    - **Step Pattern Recognition**: Identify steps using these patterns:
      - **Numbered lists**: `1. step`, `2. step`, `(1) step`, `(2) step`, `Step 1:`, `Step 2:`
@@ -108,7 +145,12 @@
      - If TODO contains explicit steps (numbered, listed, or structured), use these steps as the primary implementation guide
      - If TODO contains free text with sequential actions, parse into discrete steps
      - If TODO contains no steps, treat the entire TODO description as a single step
+   - **Error Handling**: If parsing fails for a TODO:
+     * Mark the TODO as "no steps extracted" (not as a failure)
+     * Continue parsing remaining TODOs
+     * Do NOT fail the entire phase due to individual parsing failures
    - Store parsed steps with: step number/order, description, dependencies, file context
+   - **Progress Report (MANDATORY)**: Report: "Parsed steps for [X] TODOs ([Y] with steps, [Z] without steps)"
 
 5. **Read Session Todos**
    - Use `todoread` tool to get session todo list
@@ -128,17 +170,38 @@
      - If TODO is complex OR contains multiple parsed steps, mark it for stepwise planning
      - If TODO contains parsed steps, use those steps directly in planning
      - If TODO has no steps, create a general plan
+   - **Progress Report (MANDATORY)**: Report complexity analysis results: "[X] simple TODOs, [Y] complex TODOs, [Z] with parsed steps"
 
 7. **Save Discovery Results to Memory** (if memory tool available)
+   - **CRITICAL**: If memory tool is NOT available, skip this step and proceed to step 8
+   - **Timeout**: If memory tool call exceeds 30 seconds, record timeout and continue (do not wait)
+   - **Error Handling**: If memory tool returns an error, log the error and continue (do not fail)
    - Save: "TODO discovery: [count] TODOs found, [count] with implementation steps, [count] complex TODOs identified"
    - Save: "TODO categories: [list of categories]"
    - Save: "Implementation steps extracted: [summary of steps found]"
+   - **Progress**: Report if memory save was successful, timed out, or skipped
 
 8. **Verify Phase 1 Completion** (MANDATORY)
-   - Verify all TODO tasks are discovered
-   - Verify TODO context and implementation steps are extracted
-   - Verify complexity assessment is completed
-   - Only proceed to Phase 2 after verification passes
+   - **Flexible Verification**: Verification should check "at least core steps completed" rather than "all steps must be perfect"
+   - Verify TODO discovery: At least step 2 (grep) was completed and TODOs were found (or confirmed none exist)
+   - Verify TODO context extraction: At least some TODOs had their context read (allow for partial failures)
+   - Verify step parsing: At least some TODOs had steps parsed (allow for TODOs with no steps)
+   - Verify complexity assessment: Complexity assessment was attempted for discovered TODOs
+   - **Error Tolerance**: 
+     * If some TODOs could not be read (file errors), record them but continue
+     * If some TODOs could not be parsed, mark as "no steps" and continue
+     * Do NOT fail verification due to individual TODO processing failures
+   - **Verification Report**: Generate a summary report:
+     * Total TODOs found: [N]
+     * TODOs with context read: [X]
+     * TODOs with steps parsed: [Y]
+     * TODOs with complexity assessed: [Z]
+     * Errors encountered: [list of errors, if any]
+   - **Proceed Decision**: 
+     * If core steps (2, 3, 4, 6) were completed (even with partial failures), proceed to Phase 2
+     * If step 2 found no TODOs, proceed to Phase 2 (no work to do)
+     * Only fail verification if step 2 (grep) itself failed or Phase 1 exceeded 15 minutes without progress
+   - Only proceed to Phase 2 after verification passes (with flexible criteria above)
 
 ## TODO Step Parsing Guide
 
@@ -297,6 +360,24 @@ When reading TODO comments, you MUST extract implementation steps from the follo
       - For each parsed step, complete the full cycle: implement → compile → test → fix (if needed)
       - Only proceed to next step after current step is fully complete
     - Follow the plan step by step
+    - **G6 Design Validation (when applicable)**:
+      - If the implementation plan references a G6 design file (check for "G6 Design Reference" section in plan):
+        1. **Read G6 Metadata**:
+           - Check for `.opencode/g6/<projectId>/metadata.json`
+           - Read overview from `.opencode/g6/<projectId>/overview.json`
+           - Understand the G6 design structure
+        2. **Validate Implementation**:
+           - Before implementing an entity, read the corresponding G6 business-object definition from `.opencode/g6/<projectId>/nodes/<nodeId>.json`
+           - Before implementing an API, read the corresponding G6 interface definition
+           - Verify relationships match G6 edge definitions
+           - Verify value objects match G6 value-object definitions
+        3. **Reflection Check** (after implementing code):
+           - Reflect on whether the implemented code matches the G6 design
+           - Check entity properties against G6 business-object properties
+           - Check API endpoints against G6 interface definitions
+           - Check relationships against G6 edge definitions
+           - If there are discrepancies, document them or adjust the implementation to align with G6 design
+           - Ensure entity properties, API endpoints, and relationships align with G6 design
     - For complex TODOs with sub-tasks, implement one sub-task at a time
     - Make necessary code changes using `edit` and `write` tools
     - **Check Exit Conditions**: Monitor step duration and iteration count

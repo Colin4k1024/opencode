@@ -1,0 +1,32 @@
+Refine and validate requirements for DDD analysis.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/requirements.md` does not exist, stop and instruct the user to run `/ddd.ingest` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Analyze and refine the requirements:
+  - Validate requirement completeness and clarity
+  - Identify domain boundary clues from requirements
+  - Prioritize requirements (must/should/could)
+  - Map requirements to potential domains
+  - Identify ambiguous requirements that need clarification
+  - Group requirements by potential bounded contexts
+- Update `.opencode/ddd/designs/<projectId>/requirements.md` with:
+  - Refined requirement statements
+  - Requirement priority adjustments if needed
+  - Domain mapping hints for each requirement
+  - Clarification notes for ambiguous requirements
+  - Requirement grouping by domain area
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Preserve existing REQ-### IDs.
+- Reference requirements by REQ-### IDs throughout.

@@ -1,0 +1,21 @@
+Create or update `.opencode/ddd/ddd-constitution.md`.
+
+Input: $ARGUMENTS
+
+## Instructions
+- Ensure `.opencode/ddd/` directory exists.
+  - Run bash: `mkdir -p .opencode/ddd`
+- If input is provided, incorporate it as explicit DDD principles and governance.
+- If input is empty, generate a reasonable default constitution that covers:
+  - Strategic design principles (domain analysis, bounded contexts, context mapping)
+  - Tactical design principles (entities, value objects, aggregates, repositories, domain events)
+  - Bounded context boundaries and ubiquitous language
+  - Aggregate design principles (consistency boundaries, invariants)
+  - Service boundaries and responsibilities
+  - Repository patterns and persistence strategies
+  - Domain event patterns
+  - How to resolve trade-offs in DDD design
+- Write the final constitution to `.opencode/ddd/ddd-constitution.md`.
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.

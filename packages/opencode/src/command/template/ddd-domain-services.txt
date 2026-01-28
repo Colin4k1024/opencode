@@ -1,0 +1,58 @@
+Design domain services for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/tactical-design.md` does not exist, stop and instruct the user to run `/ddd.tactical` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/strategic-design.md`
+  - `.opencode/ddd/designs/<projectId>/tactical-design.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/domain-services-detailed.md` with:
+
+### 1. Domain Services
+For each domain service, provide:
+- **Name**: Service name
+- **Bounded Context**: Which context it belongs to
+- **Purpose**: Why it's a domain service (not an entity method):
+  - Operation doesn't naturally belong to an entity
+  - Operation involves multiple aggregates
+  - Operation is a domain concept but not tied to a specific entity
+- **Interface**: Method signatures:
+  - Method name
+  - Parameters with types
+  - Return type
+  - Method description
+- **Operations**: Key operations with business logic description
+- **Dependencies**: What domain objects it works with:
+  - Entities
+  - Value objects
+  - Other domain services
+  - Repositories (if needed)
+- **Stateless**: Domain services are stateless
+- **Requirements**: REQ-### IDs that this service addresses
+
+### 2. Domain Service Design Principles
+- **Stateless**: Domain services contain no state
+- **Pure Domain Logic**: Only domain logic, no infrastructure concerns
+- **Use When Appropriate**: Only when operation doesn't fit in entity or value object
+- **Interface in Domain**: Service interface defined in domain layer
+
+### 3. When to Use Domain Services
+- **Multiple Aggregates**: Operations involving multiple aggregates
+- **Complex Calculations**: Complex business calculations
+- **Domain Concepts**: Operations that are domain concepts but not entity methods
+- **Not Infrastructure**: Not for infrastructure concerns (use application services)
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference entities, aggregates, and value objects from tactical design.
+- Keep domain services focused on pure domain logic.

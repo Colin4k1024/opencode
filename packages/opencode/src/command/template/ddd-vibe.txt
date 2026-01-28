@@ -1,0 +1,11 @@
+Run interactive DDD vibecoding workflow.
+
+Input: $ARGUMENTS
+
+## Instructions
+- Use the ddd-vibe agent workflow:
+  - Ingest mixed requirement sources (files/paste/URLs)
+  - Decompose into `requirements.md` with REQ-IDs and strict source refs
+  - Ask minimal clarification questions for gaps
+  - Generate DDD design artifacts (domains, contexts, entities, aggregates, etc.) referencing REQ-IDs
+  - Auto-implement via ddd-implement agent using design documents

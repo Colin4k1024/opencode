@@ -1,0 +1,11 @@
+Parse G6 JSON design file and generate code implementation.
+
+Input: $ARGUMENTS
+
+## Instructions
+- Use the g6-parser agent workflow:
+  - Parse G6 JSON file structure (combos, nodes, edges)
+  - Analyze dependencies and build dependency graph
+  - Split into implementation tasks by module and node type
+  - Generate ordered task list
+  - Auto-implement via coding agent

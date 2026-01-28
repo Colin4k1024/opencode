@@ -1,0 +1,61 @@
+Design domain events for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/aggregates.md` does not exist, stop and instruct the user to run `/ddd.aggregates` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/contexts.md`
+  - `.opencode/ddd/designs/<projectId>/aggregates.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/events.md` with:
+
+### 1. Domain Events
+For each domain event, provide:
+- **Name**: Event name (past tense, e.g., "OrderPlaced")
+- **Bounded Context**: Which context it originates from
+- **Aggregate**: Which aggregate publishes this event
+- **Trigger**: What action triggers this event:
+  - Business operation that causes the event
+  - When the event is published
+- **Payload**: What data is included:
+  - Event properties
+  - Data types
+  - Required vs optional fields
+- **Subscribers**: Which contexts/bounded contexts might be interested:
+  - Direct subscribers
+  - Eventual subscribers
+  - Integration points
+- **Event Versioning**: How event schema evolves over time
+- **Requirements**: REQ-### IDs that this event addresses
+
+### 2. Event Publishing Patterns
+- **When to Publish**: When events are published (during aggregate operations)
+- **How to Publish**: How events are collected and published
+- **Event Store**: Whether events are stored in an event store
+- **Transaction Boundaries**: How events relate to transactions
+
+### 3. Event Subscribers
+For each event subscriber:
+- **Event**: Which event it subscribes to
+- **Context**: Which context subscribes
+- **Handler**: What action is taken
+- **Synchronous vs Asynchronous**: How the subscription is handled
+
+### 4. Event-Driven Integration
+- **Cross-Context Communication**: How events enable context integration
+- **Eventual Consistency**: How events support eventual consistency
+- **Event Sourcing**: Whether event sourcing is used
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference aggregates and bounded contexts from previous design steps.
+- Use mermaid diagrams to show event flows if helpful.

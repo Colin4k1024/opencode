@@ -1,0 +1,25 @@
+Extract product assets from Word or Markdown documents and generate JSON output.
+
+Input: $ARGUMENTS
+
+## Instructions
+- Use the product-asset-extractor agent workflow:
+  - Detect file type (.docx or .md) from file path
+  - Load appropriate skill (word-parser for .docx, md-parser for .md)
+  - Parse document to extract product asset information
+  - Generate structured JSON output at product-assets.json in current directory
+
+## Product Asset Structure
+The output JSON should contain:
+- interaction: Overall interaction description
+- layoutAssets: 
+  - menu: Menu structure description
+  - settings: Settings/personal information description
+- pageAssets: Array of page assets, each containing:
+  - id: Page identifier
+  - name: Page name
+  - module: Module description
+  - interface: Interface description
+  - data: Data description
+  - layout: Layout description
+  - interactionLogic: Page interaction logic description

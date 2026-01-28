@@ -1,0 +1,50 @@
+Define bounded contexts for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/domains.md` does not exist, stop and instruct the user to run `/ddd.domains` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+  - `.opencode/ddd/designs/<projectId>/domains.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/contexts.md` with:
+
+### 1. Bounded Contexts
+For each bounded context, provide:
+- **Name**: Clear, business-oriented name
+- **Purpose**: What business capability it provides
+- **Domain**: Which domain (core/supporting/generic) it belongs to
+- **Boundary**: What is included and excluded from this context
+- **Ubiquitous Language**: Key terms and their definitions specific to this context
+- **Key Responsibilities**: What this context is responsible for
+- **Requirements Mapping**: Which REQ-### requirements are addressed by this context
+
+### 2. Context Boundaries
+- **What's Inside**: Entities, value objects, and services within this context
+- **What's Outside**: What belongs to other contexts
+- **Boundary Rationale**: Why these boundaries were chosen
+
+### 3. Ubiquitous Language
+For each bounded context:
+- **Key Terms**: Important domain terms
+- **Definitions**: Clear definitions of each term
+- **Usage**: How terms are used in this context
+- **Consistency**: How to maintain language consistency
+
+### 4. Context Responsibilities
+- **Primary Responsibilities**: Main responsibilities of each context
+- **Shared Responsibilities**: Responsibilities shared with other contexts (if any)
+- **Excluded Responsibilities**: What this context explicitly does not handle
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Reference domains from domains.md.
+- Use mermaid diagrams to visualize context boundaries if helpful.

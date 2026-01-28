@@ -1,0 +1,48 @@
+Perform domain analysis and classification for the current project.
+
+Input: $ARGUMENTS
+
+## Preconditions
+- If `.opencode/ddd/context.json` does not exist, stop and instruct the user to run `/ddd.init <project-name>` first.
+- If `.opencode/ddd/designs/<projectId>/requirements.md` does not exist, stop and instruct the user to run `/ddd.ingest` first.
+
+## Instructions
+- Read:
+  - `.opencode/ddd/context.json` to get `projectId`
+  - `.opencode/ddd/ddd-constitution.md` (if exists)
+  - `.opencode/ddd/designs/<projectId>/requirements.md`
+- Ensure `.opencode/ddd/designs/<projectId>/` exists.
+  - Run bash: `mkdir -p .opencode/ddd/designs/<projectId>`
+- Write `.opencode/ddd/designs/<projectId>/domains.md` with:
+
+### 1. Core Domain
+- **Identification**: The most valuable and differentiating part of the business
+- **Key Business Capabilities**: What makes this domain core
+- **Strategic Value**: Why this domain is critical to business success
+- **Requirements Mapping**: Which REQ-### requirements belong to this domain
+
+### 2. Supporting Domains
+For each supporting domain:
+- **Name**: Domain name
+- **Purpose**: Important but not differentiating business capability
+- **Key Business Capabilities**: What this domain provides
+- **Why Supporting**: Why it's classified as supporting (not core)
+- **Requirements Mapping**: Which REQ-### requirements belong to this domain
+
+### 3. Generic Domains
+For each generic domain:
+- **Name**: Domain name
+- **Purpose**: Common problem solved with standard solutions
+- **Standard Solutions**: What standard approaches are used
+- **Why Generic**: Why it's classified as generic
+- **Requirements Mapping**: Which REQ-### requirements belong to this domain
+
+### 4. Domain Value Analysis
+- **Business Value Ranking**: Relative importance of each domain
+- **Investment Priority**: Where to invest most effort
+- **Domain Dependencies**: How domains relate to each other
+
+## Rules
+- Only write/edit files under `.opencode/ddd/**`.
+- Reference requirements by REQ-### IDs throughout the document.
+- Use mermaid diagrams to visualize domain relationships if helpful.
