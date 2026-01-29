@@ -542,6 +542,7 @@ export namespace Config {
           doom_loop: PermissionAction.optional(),
           sql: PermissionRule.optional(),
           config_reader: PermissionRule.optional(),
+          skill: PermissionRule.optional(),
         })
         .catchall(PermissionRule)
         .or(PermissionAction),
