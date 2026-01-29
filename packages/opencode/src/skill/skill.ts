@@ -1,7 +1,7 @@
 import path from "path"
-import fs from "fs/promises"
-import matter from "gray-matter"
+import os from "os"
 import z from "zod"
+import { Config } from "../config/config"
 import { Instance } from "../project/instance"
 import { NamedError } from "@opencode-ai/util/error"
 import { ConfigMarkdown } from "../config/markdown"
@@ -39,6 +39,8 @@ export namespace Skill {
   )
 
   const BUNDLED_SKILLS_GLOB = new Bun.Glob("**/SKILL.md")
+  const OPENCODE_SKILL_GLOB = new Bun.Glob("{skill,skills}/**/SKILL.md")
+  const SKILL_GLOB = new Bun.Glob("**/SKILL.md")
 
   export const state = Instance.state(async () => {
     const skills: Record<string, Info> = {}
@@ -138,12 +140,42 @@ export namespace Skill {
       log.warn("bundled skills directory not found", { dir: globalSkillsDir })
     }
 
+    // Scan .opencode/skill/ directories
+    for (const dir of await Config.directories()) {
+      for await (const match of OPENCODE_SKILL_GLOB.scan({
+        cwd: dir,
+        absolute: true,
+        onlyFiles: true,
+        followSymlinks: true,
+      })) {
+        await addSkill(match)
+      }
+    }
+
+    // Scan additional skill paths from config
+    const config = await Config.get()
+    for (const skillPath of config.skills?.paths ?? []) {
+      const expanded = skillPath.startsWith("~/") ? path.join(os.homedir(), skillPath.slice(2)) : skillPath
+      const resolved = path.isAbsolute(expanded) ? expanded : path.join(Instance.directory, expanded)
+      if (!(await Filesystem.isDir(resolved))) {
+        log.warn("skill path not found", { path: resolved })
+        continue
+      }
+      for await (const match of SKILL_GLOB.scan({
+        cwd: resolved,
+        absolute: true,
+        onlyFiles: true,
+        followSymlinks: true,
+      })) {
+        await addSkill(match)
+      }
+    }
+
     log.info("loaded skills", {
       count: Object.keys(skills).length,
       names: Object.keys(skills).sort(),
       bundledCount: bundledSkillLocations.size,
       bundledLocations: Array.from(bundledSkillLocations).sort(),
-      source: "~/.opencode/skills/ only",
     })
     return skills
   })
