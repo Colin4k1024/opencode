@@ -43,6 +43,7 @@ import PROMPT_DDD_IMPLEMENT from "./template/ddd-implement.txt"
 import PROMPT_PRODUCT_ASSET_EXTRACT from "./template/product-asset-extract.txt"
 import PROMPT_DDD_G6 from "./template/ddd-g6.txt"
 import { MCP } from "../mcp"
+import { Skill } from "../skill"
 
 export namespace Command {
   export const Event = {
@@ -64,6 +65,7 @@ export namespace Command {
       agent: z.string().optional(),
       model: z.string().optional(),
       mcp: z.boolean().optional(),
+      skill: z.boolean().optional(),
       // workaround for zod not supporting async functions natively so we use getters
       // https://zod.dev/v4/changelog?id=zfunction
       template: z.promise(z.string()).or(z.string()),
@@ -545,6 +547,21 @@ export namespace Command {
           })
         },
         hints: prompt.arguments?.map((_, i) => `$${i + 1}`) ?? [],
+      }
+    }
+
+    // Add skills as invokable commands
+    for (const skill of await Skill.all()) {
+      // Skip if a command with this name already exists
+      if (result[skill.name]) continue
+      result[skill.name] = {
+        name: skill.name,
+        description: skill.description,
+        skill: true,
+        get template() {
+          return Skill.content(skill.name).then((content) => content ?? "")
+        },
+        hints: [],
       }
     }
 

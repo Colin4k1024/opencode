@@ -250,11 +250,13 @@ export namespace Skill {
     content: string
     baseDir?: string
   }): Promise<Info> {
+    const fs = await import("fs/promises")
+    const matter = await import("gray-matter")
     const base = input.baseDir ?? path.join(Instance.worktree, ".opencode", "skill")
     const dir = path.join(base, input.name)
     const filePath = path.join(dir, "SKILL.md")
     await fs.mkdir(dir, { recursive: true })
-    const body = matter.stringify(input.content.trim(), {
+    const body = matter.default.stringify(input.content.trim(), {
       name: input.name,
       description: input.description,
     })
@@ -266,5 +268,12 @@ export namespace Skill {
     }
     await Instance.dispose()
     return info
+  }
+
+  export async function content(name: string) {
+    const info = await get(name)
+    if (!info) return undefined
+    const md = await ConfigMarkdown.parse(info.location)
+    return md.content
   }
 }
