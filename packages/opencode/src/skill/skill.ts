@@ -17,6 +17,7 @@ export namespace Skill {
     name: z.string(),
     description: z.string(),
     location: z.string(),
+    content: z.string(),
   })
   export type Info = z.infer<typeof Info>
 
@@ -100,6 +101,7 @@ export namespace Skill {
         name: parsed.data.name,
         description: parsed.data.description,
         location: match,
+        content: md.content,
       }
       if (isBundled) {
         bundledSkillLocations.add(match)

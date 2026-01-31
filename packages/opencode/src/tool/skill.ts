@@ -2,8 +2,6 @@ import path from "path"
 import z from "zod"
 import { Tool } from "./tool"
 import { Skill } from "../skill"
-import { Agent } from "../agent/agent"
-import { ConfigMarkdown } from "../config/markdown"
 import { PermissionNext } from "../permission/next"
 import { Log } from "../util/log"
 import { Global } from "../global"
@@ -199,7 +197,7 @@ export const SkillTool = Tool.define("skill", async (ctx) => {
         always: [params.name],
         metadata: {},
       })
-      const content = (await ConfigMarkdown.parse(skill.location)).content
+      const content = skill.content
       const dir = path.dirname(skill.location)
 
       // Format output similar to plugin pattern
