@@ -191,14 +191,6 @@ export namespace SessionProcessor {
                 case "tool-result": {
                   const match = toolcalls[value.toolCallId]
                   if (match && match.state.status === "running") {
-                    const attachments = value.output.attachments?.map(
-                      (attachment: Omit<MessageV2.FilePart, "id" | "messageID" | "sessionID">) => ({
-                        ...attachment,
-                        id: Identifier.ascending("part"),
-                        messageID: match.messageID,
-                        sessionID: match.sessionID,
-                      }),
-                    )
                     await Session.updatePart({
                       ...match,
                       state: {
@@ -211,7 +203,7 @@ export namespace SessionProcessor {
                           start: match.state.time.start,
                           end: Date.now(),
                         },
-                        attachments,
+                        attachments: value.output.attachments,
                       },
                     })
 
