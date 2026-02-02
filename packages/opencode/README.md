@@ -23,6 +23,7 @@ bun run index.ts
 OpenCode provides a comprehensive DDD workflow for analyzing requirements and generating production-ready code. See [DDD_USAGE.md](./DDD_USAGE.md) for complete documentation.
 
 **Quick Start:**
+
 ```bash
 /ddd.init <project-name>      # Initialize DDD workspace
 /ddd.ingest @requirements.md  # Import requirements
@@ -33,6 +34,7 @@ OpenCode provides a comprehensive DDD workflow for analyzing requirements and ge
 ```
 
 **Supported Technologies:**
+
 - TypeScript/Node.js (NestJS, Express)
 - Java (Spring Boot)
 - Python (FastAPI, Django)

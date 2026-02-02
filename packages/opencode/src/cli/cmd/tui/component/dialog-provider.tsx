@@ -301,9 +301,7 @@ function BaseURLStep(props: ApiMethodProps) {
           <text fg={theme.textMuted}>
             Enter a custom base URL for this provider, or press enter to skip and use the default.
           </text>
-          <text fg={theme.textMuted}>
-            This is useful for proxy services or custom endpoints.
-          </text>
+          <text fg={theme.textMuted}>This is useful for proxy services or custom endpoints.</text>
         </box>
       )}
       onConfirm={async (baseURL) => {

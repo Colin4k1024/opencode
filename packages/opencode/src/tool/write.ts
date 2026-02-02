@@ -33,7 +33,7 @@ export const WriteTool = Tool.define("write", {
       normalizedPath.includes(".opencode/g6/") && normalizedPath.includes("/nodes/") && normalizedPath.endsWith(".json")
     if (isG6NodeCache && params.content.trim().length === 0) {
       throw new Error(
-        "G6 node cache files must not be empty. Provide the full Level 4 JSON as content (node, outgoingEdges, incomingEdges, dependencies, implementationRequirements)."
+        "G6 node cache files must not be empty. Provide the full Level 4 JSON as content (node, outgoingEdges, incomingEdges, dependencies, implementationRequirements).",
       )
     }
 

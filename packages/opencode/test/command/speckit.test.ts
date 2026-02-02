@@ -6,9 +6,7 @@ import { Agent } from "../../src/agent/agent"
 import { PermissionNext } from "../../src/permission/next"
 
 describe("speckit integration", () => {
-  test(
-    "registers speckit commands",
-    async () => {
+  test("registers speckit commands", async () => {
     await using tmp = await tmpdir()
     await Instance.provide({
       directory: tmp.path,
@@ -26,13 +24,9 @@ describe("speckit integration", () => {
         expect(names).toContain("speckit.vibe")
       },
     })
-    },
-    20_000,
-  )
+  }, 20_000)
 
-  test(
-    "speckit commands have expected agents and hints",
-    async () => {
+  test("speckit commands have expected agents and hints", async () => {
     await using tmp = await tmpdir()
     await Instance.provide({
       directory: tmp.path,
@@ -58,9 +52,7 @@ describe("speckit integration", () => {
         expect(vibe?.hints).toContain("$ARGUMENTS")
       },
     })
-    },
-    20_000,
-  )
+  }, 20_000)
 
   test("speckit templates resolve", async () => {
     await using tmp = await tmpdir()
@@ -115,12 +107,11 @@ describe("speckit integration", () => {
         expect(PermissionNext.evaluate("task", "*", vibe!.permission).action).toBe("allow")
         expect(PermissionNext.evaluate("orchestrate", "*", vibe!.permission).action).toBe("allow")
 
-        expect(PermissionNext.evaluate("edit", ".opencode/speckit/specs/x/requirements.md", vibe!.permission).action).toBe(
-          "allow",
-        )
+        expect(
+          PermissionNext.evaluate("edit", ".opencode/speckit/specs/x/requirements.md", vibe!.permission).action,
+        ).toBe("allow")
         expect(PermissionNext.evaluate("edit", "src/index.ts", vibe!.permission).action).toBe("deny")
       },
     })
   })
 })
-

@@ -1,6 +1,7 @@
 # DDD (Domain-Driven Design) Analysis and Code Generation
 
 OpenCode provides a comprehensive DDD workflow that helps you:
+
 1. Analyze requirements and create DDD design documents
 2. Perform strategic and tactical DDD design
 3. Automatically generate production-ready code from design documents
@@ -88,12 +89,14 @@ Initialize a new DDD project workspace.
 ```
 
 **Examples:**
+
 ```bash
 /ddd.init 电商系统
 /ddd.init 001-order-management --branch
 ```
 
 **What it does:**
+
 - Creates `.opencode/ddd/` directory structure
 - Creates `context.json` with project metadata
 - Optionally creates and switches to a git branch
@@ -108,11 +111,13 @@ Create or update DDD principles and design guidelines.
 ```
 
 **What it does:**
+
 - Creates or updates `.opencode/ddd/ddd-constitution.md`
 - Defines DDD strategic and tactical design principles
 - Establishes design guidelines for the project
 
 **Output:**
+
 - `.opencode/ddd/ddd-constitution.md` - DDD principles and guidelines
 
 ### `/ddd.ingest` - Import Requirements
@@ -126,6 +131,7 @@ Import requirement documents from files, URLs, or pasted text.
 ```
 
 **What it does:**
+
 - Fetches documents from URLs
 - Reads local files
 - Accepts pasted text
@@ -133,6 +139,7 @@ Import requirement documents from files, URLs, or pasted text.
 - Creates `sources.md` tracking all requirement sources
 
 **Output:**
+
 - `.opencode/ddd/inputs/sources.md` - Source index
 - `.opencode/ddd/designs/<projectId>/requirements.md` - Structured requirements
 
@@ -145,12 +152,14 @@ Refine and validate requirements for DDD analysis.
 ```
 
 **What it does:**
+
 - Validates requirement completeness
 - Identifies domain boundary clues
 - Prioritizes requirements
 - Maps requirements to potential domains
 
 **Output:**
+
 - Updates `.opencode/ddd/designs/<projectId>/requirements.md` with refined requirements
 
 ### `/ddd.domains` - Domain Analysis
@@ -162,15 +171,18 @@ Perform domain analysis and classification.
 ```
 
 **What it does:**
+
 - Identifies core domains
 - Identifies supporting domains
 - Identifies generic domains
 - Analyzes domain value
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/domains.md`
 
 **Contains:**
+
 - Core domain identification
 - Supporting domains
 - Generic domains
@@ -185,15 +197,18 @@ Define bounded contexts with boundaries and ubiquitous language.
 ```
 
 **What it does:**
+
 - Identifies bounded contexts
 - Defines context boundaries
 - Establishes ubiquitous language
 - Maps context responsibilities
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/contexts.md`
 
 **Contains:**
+
 - Bounded context definitions
 - Context boundaries
 - Ubiquitous language
@@ -208,15 +223,18 @@ Create context mapping showing relationships between bounded contexts.
 ```
 
 **What it does:**
+
 - Identifies context relationships
 - Defines relationship types (Partnership, Shared Kernel, Customer-Supplier, etc.)
 - Maps upstream/downstream relationships
 - Designs integration patterns
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/mapping.md`
 
 **Contains:**
+
 - Context map diagram (mermaid)
 - Relationship types
 - Integration patterns
@@ -231,6 +249,7 @@ Perform strategic DDD design analysis.
 ```
 
 **What it does:**
+
 - If detailed docs exist (`domains.md`, `contexts.md`, `mapping.md`): Integrates them into a complete strategic design
 - If detailed docs don't exist: Generates complete strategic design directly (backward compatible)
 - Analyzes domain boundaries
@@ -239,9 +258,11 @@ Perform strategic DDD design analysis.
 - Classifies domains (core, supporting, generic)
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/strategic-design.md`
 
 **Contains:**
+
 - Domain analysis
 - Bounded contexts with ubiquitous language
 - Context mapping diagram (mermaid)
@@ -256,12 +277,14 @@ Design entities with identity, attributes, behaviors, and invariants.
 ```
 
 **What it does:**
+
 - Identifies entities
 - Defines entity identity
 - Designs entity attributes and behaviors
 - Establishes entity invariants
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/entities.md`
 
 ### `/ddd.value-objects` - Value Object Design
@@ -273,12 +296,14 @@ Design value objects with immutability and validation.
 ```
 
 **What it does:**
+
 - Identifies value objects
 - Defines value object attributes
 - Establishes validation rules
 - Ensures immutability
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/value-objects.md`
 
 ### `/ddd.aggregates` - Aggregate Design
@@ -290,12 +315,14 @@ Design aggregates with boundaries and invariants.
 ```
 
 **What it does:**
+
 - Identifies aggregates
 - Defines aggregate roots
 - Establishes aggregate boundaries
 - Defines aggregate invariants
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/aggregates.md`
 
 ### `/ddd.repositories` - Repository Design
@@ -307,11 +334,13 @@ Design repository interfaces for aggregate persistence.
 ```
 
 **What it does:**
+
 - Designs repository interfaces
 - Defines query methods
 - Establishes persistence strategies
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/repositories.md`
 
 ### `/ddd.events` - Domain Event Design
@@ -323,12 +352,14 @@ Design domain events with payloads and subscribers.
 ```
 
 **What it does:**
+
 - Identifies domain events
 - Designs event payloads
 - Maps event subscribers
 - Defines event publishing patterns
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/events.md`
 
 ### `/ddd.tactical` - Tactical Design Analysis
@@ -340,6 +371,7 @@ Perform tactical DDD design analysis.
 ```
 
 **What it does:**
+
 - If detailed docs exist (`entities.md`, `value-objects.md`, `aggregates.md`, `repositories.md`, `events.md`): Integrates them into a complete tactical design
 - If detailed docs don't exist: Generates complete tactical design directly (backward compatible)
 - Designs entities with identity and behaviors
@@ -350,9 +382,11 @@ Perform tactical DDD design analysis.
 - Defines domain events
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/tactical-design.md`
 
 **Contains:**
+
 - Entities with attributes, behaviors, invariants
 - Value objects with validation
 - Aggregates with boundaries
@@ -369,11 +403,13 @@ Design application services for use case orchestration.
 ```
 
 **What it does:**
+
 - Identifies application services
 - Designs use case orchestration
 - Defines service interfaces
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/app-services.md`
 
 ### `/ddd.domain-services` - Domain Service Design
@@ -385,11 +421,13 @@ Design domain services with interfaces and dependencies.
 ```
 
 **What it does:**
+
 - Identifies domain services
 - Designs service interfaces
 - Maps service dependencies
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/domain-services-detailed.md`
 
 ### `/ddd.boundaries` - Service Boundary Design
@@ -401,15 +439,18 @@ Design service boundaries and integration points.
 ```
 
 **What it does:**
+
 - Defines service boundaries
 - Maps service responsibilities
 - Designs service interactions
 - Identifies integration points
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/boundaries.md`
 
 **Contains:**
+
 - Service boundaries
 - Service responsibilities
 - Service interaction patterns
@@ -425,6 +466,7 @@ Perform domain service design and service boundary analysis.
 ```
 
 **What it does:**
+
 - If detailed docs exist (`app-services.md`, `domain-services-detailed.md`, `boundaries.md`): Integrates them into a complete service design
 - If detailed docs don't exist: Generates complete service design directly (backward compatible)
 - Designs application services
@@ -433,9 +475,11 @@ Perform domain service design and service boundary analysis.
 - Creates service boundaries
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/domain-services.md`
 
 **Contains:**
+
 - Application services with operations
 - Domain service interfaces
 - Service dependency graph (mermaid)
@@ -450,12 +494,14 @@ Generate a comprehensive DDD design document synthesizing all artifacts.
 ```
 
 **What it does:**
+
 - Combines all design documents
 - Creates executive summary
 - Ensures consistency across documents
 - Generates requirements traceability matrix
 
 **Output:**
+
 - `.opencode/ddd/designs/<projectId>/ddd-design.md`
 
 ### `/ddd.implement` - Auto-Generate Code
@@ -467,6 +513,7 @@ Automatically generate complete code implementation from DDD design documents.
 ```
 
 **What it does:**
+
 1. Reads and parses all DDD design documents
 2. Detects project technology stack (TypeScript, Java, Python, Go)
 3. Generates complete code structure:
@@ -479,12 +526,14 @@ Automatically generate complete code implementation from DDD design documents.
 6. Automatically fixes errors
 
 **Supported Technologies:**
+
 - **TypeScript/Node.js**: NestJS, Express, TypeORM, Prisma, Drizzle
 - **Java**: Spring Boot, Hibernate, JPA
 - **Python**: FastAPI, Django, Flask, SQLAlchemy
 - **Go**: Gin, Echo, Fiber, GORM
 
 **Output:**
+
 - Complete code structure organized by bounded contexts
 - All layers of DDD architecture
 - Unit and integration tests
@@ -504,7 +553,7 @@ Automatically generate complete code implementation from DDD design documents.
 # Step 3: Strategic design
 /ddd.strategic
 
-# Step 4: Tactical design  
+# Step 4: Tactical design
 /ddd.tactical
 
 # Step 5: Service design
@@ -584,16 +633,19 @@ src/main/java/com/example/
 All design documents are stored in `.opencode/ddd/designs/<projectId>/`:
 
 ### Core Documents
+
 - **requirements.md**: Structured requirements with REQ-### IDs
 - **ddd-constitution.md**: DDD principles and design guidelines (in `.opencode/ddd/`)
 
 ### Strategic Design (Detailed)
+
 - **domains.md**: Domain analysis (core, supporting, generic)
 - **contexts.md**: Bounded context definitions
 - **mapping.md**: Context mapping and relationships
 - **strategic-design.md**: Integrated strategic design (generated from detailed docs)
 
 ### Tactical Design (Detailed)
+
 - **entities.md**: Entity designs
 - **value-objects.md**: Value object designs
 - **aggregates.md**: Aggregate designs
@@ -602,18 +654,20 @@ All design documents are stored in `.opencode/ddd/designs/<projectId>/`:
 - **tactical-design.md**: Integrated tactical design (generated from detailed docs)
 
 ### Service Design (Detailed)
+
 - **app-services.md**: Application service designs
 - **domain-services-detailed.md**: Domain service designs
 - **boundaries.md**: Service boundary designs
 - **domain-services.md**: Integrated service design (generated from detailed docs)
 
 ### Final Document
+
 - **ddd-design.md**: Complete DDD design document (summary)
 
 ## Best Practices
 
 1. **Start with Requirements**: Always run `/ddd.ingest` first to establish requirements
-2. **Choose Your Mode**: 
+2. **Choose Your Mode**:
    - Use **Quick Mode** for simple projects or when you want to generate everything at once
    - Use **Detailed Mode** for complex projects where you need step-by-step refinement
 3. **Follow the Sequence**: Run commands in order

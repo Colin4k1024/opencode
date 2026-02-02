@@ -4,7 +4,7 @@
 
 系统默认的 `opencode` 命令指向系统安装的版本（1.1.21），不包含新添加的 fix 功能。
 
-我们构建的开发版本（0.0.0-dev-*）包含 fix 功能，位于 `~/.local/bin/opencode`。
+我们构建的开发版本（0.0.0-dev-\*）包含 fix 功能，位于 `~/.local/bin/opencode`。
 
 ## 解决方案
 

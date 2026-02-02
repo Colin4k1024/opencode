@@ -41,7 +41,8 @@ export function createFixTestCommitWorkflow(errorDescription: string, commitMess
       {
         id: "test",
         agent: "general",
-        prompt: "Run tests to verify the fix works correctly. Use the bash tool to execute the appropriate test command for this project (e.g., npm test, mvn test, pytest, go test, etc.).",
+        prompt:
+          "Run tests to verify the fix works correctly. Use the bash tool to execute the appropriate test command for this project (e.g., npm test, mvn test, pytest, go test, etc.).",
         condition: {
           type: "test_passed",
           check: "npm test", // Default test command, can be customized
@@ -85,7 +86,8 @@ export function createFixTestWorkflow(errorDescription: string): WorkflowPreset 
       {
         id: "test",
         agent: "general",
-        prompt: "Run tests to verify the fix works correctly. Use the bash tool to execute the appropriate test command for this project.",
+        prompt:
+          "Run tests to verify the fix works correctly. Use the bash tool to execute the appropriate test command for this project.",
         on_success: null,
         on_failure: "stop",
       },
@@ -105,7 +107,8 @@ export function createTestCommitWorkflow(commitMessage?: string): WorkflowPreset
       {
         id: "test",
         agent: "general",
-        prompt: "Run tests to verify everything works. Use the bash tool to execute the appropriate test command for this project.",
+        prompt:
+          "Run tests to verify everything works. Use the bash tool to execute the appropriate test command for this project.",
         condition: {
           type: "test_passed",
           check: "npm test",
@@ -149,7 +152,8 @@ export function createFixTestCommitPushWorkflow(errorDescription: string, commit
       {
         id: "test",
         agent: "general",
-        prompt: "Run tests to verify the fix works correctly. Use the bash tool to execute the appropriate test command for this project (e.g., npm test, mvn test, pytest, go test, etc.).",
+        prompt:
+          "Run tests to verify the fix works correctly. Use the bash tool to execute the appropriate test command for this project (e.g., npm test, mvn test, pytest, go test, etc.).",
         condition: {
           type: "test_passed",
           check: "npm test", // Default test command, can be customized

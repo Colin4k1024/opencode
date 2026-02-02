@@ -250,7 +250,9 @@ export namespace LLM {
     if (cfg.rules?.delegateToSubagent) {
       const p = cfg.rules.delegateToSubagent
       const full = path.isAbsolute(p) ? p : path.join(Instance.worktree, p)
-      const text = await Bun.file(full).text().catch(() => p)
+      const text = await Bun.file(full)
+        .text()
+        .catch(() => p)
       out.push(`\n## When to delegate to subagents\n${text}`)
     }
     return out

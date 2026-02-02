@@ -7,18 +7,22 @@
 ## 新提示词的关键要求
 
 ### 1. 初始化步骤 ✅
+
 **要求**: 启动时自动执行项目扫描、配置加载、依赖分析等
 
-**实现**: 
+**实现**:
+
 - ✅ 在 `fix.ts` 的 prompt 构建中添加了初始化指令
 - ✅ Agent 拥有所需的所有工具权限（glob, config-reader, read, list, grep）
 
 **代码位置**: `packages/opencode/src/cli/cmd/fix.ts:223-228`
 
 ### 2. 标准化 JSON 输出格式 ✅
+
 **要求**: 修复建议必须遵循特定的 JSON 格式
 
 **实现**:
+
 - ✅ 在 prompt 中明确要求使用标准化 JSON 格式
 - ✅ 包含所有必需字段：problem_summary, root_cause, fix_proposals, verification_steps, rollback_instructions
 - ✅ Agent 会根据提示词自动生成符合格式的响应
@@ -26,30 +30,37 @@
 **代码位置**: `packages/opencode/src/cli/cmd/fix.ts:243-252`
 
 ### 3. 回滚保证 ✅
+
 **要求**: 在修复前创建备份点，确保可以完全回滚
 
 **实现**:
+
 - ✅ OpenCode 已有完整的 snapshot 和 revert 功能
 - ✅ 在 prompt 中明确要求创建备份点
 - ✅ 系统会自动跟踪文件更改
 
-**相关文件**: 
+**相关文件**:
+
 - `packages/opencode/src/snapshot/index.ts` - Snapshot 功能
 - `packages/opencode/src/session/revert.ts` - Revert 功能
 
 ### 4. 失败处理 ✅
+
 **要求**: 如果修复失败，立即回滚并提供详细分析
 
 **实现**:
+
 - ✅ 在 prompt 中明确说明失败处理流程
 - ✅ Agent 会根据提示词执行回滚和提供替代方案
 
 **代码位置**: `packages/opencode/src/cli/cmd/fix.ts:252`
 
 ### 5. 安全规则 ✅
+
 **要求**: 自动修复仅适用于低风险问题
 
 **实现**:
+
 - ✅ 在 prompt 中明确列出可自动修复的问题类型
 - ✅ 其他问题需要用户确认
 
@@ -84,6 +95,7 @@ permission: {
 ```
 
 这些权限完全支持：
+
 - ✅ 项目扫描（glob, list）
 - ✅ 配置读取（config-reader, read）
 - ✅ 依赖分析（read, grep）
@@ -153,6 +165,7 @@ opencode-dev fix "missing semicolon" --auto
 ✅ **所有新提示词的要求都已适配完成**
 
 代码已更新以支持：
+
 - 初始化步骤
 - 标准化 JSON 输出格式
 - 回滚保证

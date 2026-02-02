@@ -166,8 +166,8 @@ async function parseConfigFile(filePath: string): Promise<any> {
     try {
       // Dynamically import the toml package if available
       // @ts-expect-error: May not have types if toml is not installed
-      const toml = await import("toml");
-      return toml.parse(content);
+      const toml = await import("toml")
+      return toml.parse(content)
     } catch (e) {
       // Fallback to raw content
       // If desired, log the error for diagnosis: console.warn("TOML parse failed:", e);
@@ -202,7 +202,7 @@ async function parseConfigFile(filePath: string): Promise<any> {
       const trimmed = line.trim()
       // Skip comments and empty lines
       if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("!")) continue
-      
+
       // Handle key=value format
       const equalIndex = trimmed.indexOf("=")
       if (equalIndex > 0) {

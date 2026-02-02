@@ -663,13 +663,13 @@ export namespace Provider {
         },
         experimentalOver200K: model.cost?.context_over_200k
           ? {
-            cache: {
-              read: model.cost.context_over_200k.cache_read ?? 0,
-              write: model.cost.context_over_200k.cache_write ?? 0,
-            },
-            input: model.cost.context_over_200k.input,
-            output: model.cost.context_over_200k.output,
-          }
+              cache: {
+                read: model.cost.context_over_200k.cache_read ?? 0,
+                write: model.cost.context_over_200k.cache_write ?? 0,
+              },
+              input: model.cost.context_over_200k.input,
+              output: model.cost.context_over_200k.output,
+            }
           : undefined,
       },
       limit: {
@@ -992,7 +992,8 @@ export namespace Provider {
         for (const modelID of proxyModels) {
           if (!anthropicProvider.models[modelID]) {
             // Create a model entry based on similar existing models
-            const baseModel = anthropicProvider.models["claude-sonnet-4-5-20250929"] ||
+            const baseModel =
+              anthropicProvider.models["claude-sonnet-4-5-20250929"] ||
               anthropicProvider.models["claude-3-5-sonnet-20241022"] ||
               Object.values(anthropicProvider.models)[0]
 
@@ -1066,7 +1067,7 @@ export namespace Provider {
         log.info("Proxy models added for Anthropic", {
           count: proxyModels.length,
           models: proxyModels,
-          baseURL
+          baseURL,
         })
       }
     }

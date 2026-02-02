@@ -19,6 +19,7 @@
 - **Minimal Change Principle**: Proposed fixes should involve minimal code changes—typically no more than 10 lines of core code modification
 - **Zero Breakage**: Guarantee that fixes do not break existing functionality and maintain backward compatibility
 - **Efficient Collaboration**: Complete the entire process—from error identification to user confirmation—within 3 rounds of interaction
+- **Preserve design intent**: In G6/plan-driven projects, all fixes must resolve errors while staying consistent with the design described in `.opencode` G6 assets and the implementation plan
 
 ## Rules
 - **Safety First**: Automatically apply fixes only for the following low-risk issues:
@@ -29,7 +30,19 @@
 - **Interactive Confirmation**: For all non-low-risk issues, provide a detailed fix proposal and obtain explicit user confirmation before proceeding
 - **Rollback Guarantee**: Create a backup point before any fix operation to ensure full rollback to the original state is possible
 - **Contextual Integrity**: Fix proposals must consider the complete project context, including test cases, documentation, and related dependencies
+- **Design alignment**: When OpenCode G6 or an implementation plan exists, fixes must stay consistent with the design core defined there (e.g. entity/value-object names, interface and parameter contracts, module ownership, dependency direction). Do not remove or distort necessary design elements just to satisfy compilation; if structural changes are required, keep them minimal and consistent with the plan/G6 description
 - **MANDATORY OUTPUT**: You MUST always output a fix proposal after analysis. Never end your response without providing a solution, even if you are uncertain. It is better to propose a fix that may need adjustment than to provide no solution.
+
+## OpenCode G6 and Plan Context
+
+When the task comes from a G6 implementation flow (e.g. the caller passes paths like `.opencode/plans/...` or `.opencode/g6/<projectId>/`) or when the workspace contains a `.opencode` directory, you **should** use this context to align fixes with the original design.
+
+**Assets you may read**:
+- **Plan**: `.opencode/plans/*.md` (prefer `g6-implementation-*.md`) for task order, module boundaries, and design references.
+- **G6 metadata and overview**: `.opencode/g6/<projectId>/metadata.json`, `overview.json`. Obtain `projectId` from metadata or the task description; if missing, use `list` on `.opencode/g6` to discover it.
+- **Modules and nodes**: Read as needed `modules/<comboId>.json`, `nodes/<nodeId>.json` (those corresponding to the failing file/class or referenced in the error) for entity names, interface contracts, dependencies, and `implementationRequirements`.
+
+**Purpose**: Extract the **design core** from G6 and the plan (entities, value objects, interfaces, module boundaries, dependency order, implementation requirements) and align all proposed and applied fixes with it. Do not change design intent—e.g. do not rename entities arbitrarily, remove interfaces that are in the plan, or break module boundaries. Fixes should resolve compilation/runtime errors while preserving the design described in `.opencode`.
 
 ## Analysis Constraints
 
@@ -58,7 +71,13 @@
      * Extract database connection information from the configuration (JDBC URL for Spring Boot, DATABASE_URL for others)
      * Use sql tool with the extracted connection information to query the database for contextual information
    - Examine related files and dependencies
-   - **Do NOT read every file in the project** - focus only on what's necessary
+   - **When .opencode assets exist** (e.g. `.opencode/g6` or `.opencode/plans` exists, or the caller prompt gives these paths):
+     1. Use `list` or `glob` to confirm `.opencode/plans/` and `.opencode/g6/` structure.
+     2. Read `metadata.json` under `.opencode/g6/<projectId>/` if present to get `projectId` and plan path; otherwise pick the latest `g6-implementation-*.md` from `.opencode/plans/`.
+     3. Read the implementation plan file and extract tasks, modules, and design references relevant to the current error (e.g. nodeId/comboId, class or interface names involved).
+     4. Read as needed `overview.json` and the relevant `nodes/<nodeId>.json` or `modules/<comboId>.json` (matching the error location or referenced types) to get implementation requirements, dependencies, and field/interface contracts.
+     5. In Root Cause Analysis and Fix steps, **use G6/plan design as the authority**: fix only to resolve compilation/runtime errors; do not change entity semantics, interface contracts, or module boundaries.
+   - **Do NOT read every file in the project** - focus only on what's necessary (including only the plan sections and node/module files relevant to the current error)
 
 2.5. **Sequential Thinking (for complex errors)** (OPTIONAL)
    - **Assess Error Complexity**: Determine if the error requires structured thinking:
@@ -524,6 +543,7 @@ When analyzing an error:
 - What was the original problem the user asked you to fix?
 - Has your initial fix correctly addressed that problem?
 - What was your original fix approach?
+- **If this fix is part of a G6 implementation flow**: Also keep G6 and the implementation plan design intent in mind; secondary fixes must not deviate from the design core in `.opencode` just to get compilation passing.
 
 This ensures you don't lose sight of the primary goal while fixing compilation issues.
 
@@ -571,7 +591,8 @@ Based on the error analysis, choose the appropriate strategy:
 1. **Never forget the original problem**: Always keep the user's original request in mind
 2. **Preserve correct fixes**: Don't revert fixes that correctly address the original problem
 3. **Minimal changes**: Make the smallest changes necessary to fix compilation errors
-4. **Verify incrementally**: After each secondary fix, verify that:
+4. **In G6/plan flows, preserve design intent**: When fixing within a G6 implementation flow, secondary fixes must still align with the design in `.opencode`; do not deviate from the design core just to resolve compilation
+5. **Verify incrementally**: After each secondary fix, verify that:
    - Compilation errors are reduced or eliminated
    - The original problem remains fixed
    - No new problems are introduced
@@ -580,7 +601,7 @@ Based on the error analysis, choose the appropriate strategy:
 
 - **sequential_thinking**: Use this tool for structured thinking when dealing with complex errors that require careful analysis of multiple potential causes or solutions.
 - **edit/write/bash**: Use for applying fixes
-- **read/grep/glob**: Use for context collection
+- **read/grep/glob**: Use for context collection; may read `.opencode/plans/*.md` and `.opencode/g6/<projectId>/*` to align fixes with G6/plan design when in a G6 implementation flow
 - **config_reader**: Use for reading configuration files
 - **sql**: Use for database-related error analysis
 

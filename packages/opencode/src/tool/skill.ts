@@ -16,7 +16,7 @@ const parameters = z.object({
 
 export const SkillTool = Tool.define("skill", async (ctx) => {
   const log = Log.create({ service: "skill-tool" })
-  
+
   // CRITICAL: Verify skills are from global directory, force reload if not
   const globalSkillsDir = path.join(Global.Path.home, ".opencode", "skills")
   let allSkills = await Skill.all()
@@ -163,8 +163,14 @@ export const SkillTool = Tool.define("skill", async (ctx) => {
         const errorMessage = [
           `Skill "${params.name}" not found.`,
           ``,
-          `All loaded skills (${allSkills.length}): ${allSkills.map((s) => s.name).sort().join(", ")}`,
-          `Accessible skills (${accessible.length}): ${accessible.map((s) => s.name).sort().join(", ")}`,
+          `All loaded skills (${allSkills.length}): ${allSkills
+            .map((s) => s.name)
+            .sort()
+            .join(", ")}`,
+          `Accessible skills (${accessible.length}): ${accessible
+            .map((s) => s.name)
+            .sort()
+            .join(", ")}`,
           `Permission check for "${params.name}": ${JSON.stringify(permissionCheck, null, 2)}`,
           agentInfo ? `Agent: ${agentInfo.name}` : "No agent context",
         ].join("\n")

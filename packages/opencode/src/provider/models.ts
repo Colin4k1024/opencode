@@ -79,7 +79,7 @@ export namespace ModelsDev {
     const file = Bun.file(filepath)
     const result = await file.json().catch(() => {})
     if (result) return result as Record<string, Provider>
-    
+
     // If cache file doesn't exist, try to refresh it first
     // But don't fail if network is unavailable (e.g., during build)
     try {
@@ -90,7 +90,7 @@ export namespace ModelsDev {
       // Network error during build is acceptable, continue to fallback
       log.warn("Failed to refresh models data", { error: e })
     }
-    
+
     // Fallback: try to use macro data if available (for build time)
     try {
       const json = await data()

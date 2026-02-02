@@ -599,6 +599,10 @@ export type EventFileEdited = {
   type: "file.edited"
   properties: {
     file: string
+    /**
+     * Tool that triggered the edit
+     */
+    tool?: "write" | "edit"
   }
 }
 
@@ -626,6 +630,68 @@ export type EventTodoUpdated = {
   properties: {
     sessionID: string
     todos: Array<Todo>
+  }
+}
+
+export type Thought = {
+  /**
+   * Thought number in the sequence
+   */
+  number: number
+  /**
+   * The thought content
+   */
+  content: string
+  /**
+   * Timestamp when the thought was added
+   */
+  timestamp: number
+  /**
+   * Whether this thought revises a previous thought
+   */
+  isRevision?: boolean
+  /**
+   * The thought number being revised
+   */
+  revisesThought?: number
+  /**
+   * The thought number this branch originates from
+   */
+  branchFromThought?: number
+  /**
+   * Identifier for the branch
+   */
+  branchId?: string
+}
+
+export type ThoughtChain = {
+  /**
+   * Array of thoughts in the chain
+   */
+  thoughts: Array<Thought>
+  /**
+   * Total number of thoughts estimated
+   */
+  totalThoughts: number
+  /**
+   * Current branch identifier
+   */
+  currentBranch?: string
+  /**
+   * Timestamp when the chain was created
+   */
+  createdAt: number
+  /**
+   * Timestamp when the chain was last updated
+   */
+  updatedAt: number
+}
+
+export type EventSequentialThinkingUpdated = {
+  type: "sequential_thinking.updated"
+  properties: {
+    sessionID: string
+    chain: ThoughtChain
   }
 }
 
@@ -866,6 +932,7 @@ export type Event =
   | EventSessionCompacted
   | EventFileEdited
   | EventTodoUpdated
+  | EventSequentialThinkingUpdated
   | EventTuiPromptAppend
   | EventTuiCommandExecute
   | EventTuiToastShow
@@ -1330,6 +1397,8 @@ export type PermissionConfig =
       codesearch?: PermissionActionConfig
       lsp?: PermissionRuleConfig
       doom_loop?: PermissionActionConfig
+      sql?: PermissionRuleConfig
+      config_reader?: PermissionRuleConfig
       [key: string]: PermissionRuleConfig | Array<string> | PermissionActionConfig | undefined
     }
   | PermissionActionConfig
@@ -1714,6 +1783,27 @@ export type Config = {
   instructions?: Array<string>
   layout?: LayoutConfig
   permission?: PermissionConfig
+  rules?: {
+    /**
+     * Reject or ask when edit/write contains likely hardcoded secrets
+     */
+    noSecrets?: boolean
+    /**
+     * Enforce TDD and optional coverage target in system prompt
+     */
+    tdd?: {
+      enforce: boolean
+      coverage?: number
+    }
+    /**
+     * Validate git commit -m format in bash tool
+     */
+    gitCommitFormat?: "conventional" | "angular" | "none"
+    /**
+     * Path to .md or inline text: when to delegate to subagents; injected into system prompt
+     */
+    delegateToSubagent?: string
+  }
   tools?: {
     [key: string]: boolean
   }
@@ -1749,6 +1839,26 @@ export type Config = {
           [key: string]: string
         }
       }>
+      codeHygiene?: {
+        /**
+         * Warn when written content contains console.log
+         */
+        warnConsoleLog?: boolean
+      }
+      docControl?: {
+        /**
+         * Glob patterns for doc files that don't need create_doc ask (e.g. docs**, CHANGELOG*)
+         */
+        allowPaths?: Array<string>
+        /**
+         * Default for create_doc when not in allowPaths
+         */
+        defaultPermission?: "ask" | "deny"
+      }
+      /**
+       * Require extra confirmation before git push
+       */
+      pushConfirm?: boolean
     }
     /**
      * Number of retries for chat completions on failure
@@ -1775,6 +1885,16 @@ export type Config = {
      * Timeout in milliseconds for model context protocol (MCP) requests
      */
     mcp_timeout?: number
+    memory?: {
+      /**
+       * Persist session summary across sessions
+       */
+      persist?: boolean
+      /**
+       * Max tokens for the context summary (default 500)
+       */
+      maxSummaryTokens?: number
+    }
   }
 }
 
@@ -1864,6 +1984,10 @@ export type Command = {
   template: string
   subtask?: boolean
   hints: Array<string>
+  /**
+   * Built-in handler: e.g. 'learn' for /learn
+   */
+  handler?: string
 }
 
 export type Model = {
@@ -2870,6 +2994,57 @@ export type SessionTodoResponses = {
 }
 
 export type SessionTodoResponse = SessionTodoResponses[keyof SessionTodoResponses]
+
+export type SessionHostedRunData = {
+  body?: {
+    messageID?: string
+    agent?: string
+    model?: string
+    arguments: string
+    command: string
+    variant?: string
+    parts?: Array<{
+      id?: string
+      type: "file"
+      mime: string
+      filename?: string
+      url: string
+      source?: FilePartSource
+    }>
+  }
+  path?: never
+  query?: {
+    directory?: string
+  }
+  url: "/session/hosted/run"
+}
+
+export type SessionHostedRunErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+  /**
+   * Not found
+   */
+  404: NotFoundError
+}
+
+export type SessionHostedRunError = SessionHostedRunErrors[keyof SessionHostedRunErrors]
+
+export type SessionHostedRunResponses = {
+  /**
+   * Hosted run started
+   */
+  200: {
+    /**
+     * Session ID for the hosted run
+     */
+    sessionID: string
+  }
+}
+
+export type SessionHostedRunResponse = SessionHostedRunResponses[keyof SessionHostedRunResponses]
 
 export type SessionInitData = {
   body?: {

@@ -72,32 +72,32 @@ export namespace Skill {
           })
         }
 
-      // Prevent overriding bundled skills from project-level skills
-      if (skills[parsed.data.name]) {
-        if (bundledSkillLocations.has(skills[parsed.data.name].location)) {
-          log.warn("skipping project-level skill, bundled skill already exists", {
+        // Prevent overriding bundled skills from project-level skills
+        if (skills[parsed.data.name]) {
+          if (bundledSkillLocations.has(skills[parsed.data.name].location)) {
+            log.warn("skipping project-level skill, bundled skill already exists", {
+              name: parsed.data.name,
+              bundled: skills[parsed.data.name].location,
+              project: match,
+            })
+            return
+          }
+          log.warn("duplicate skill name, overriding", {
             name: parsed.data.name,
-            bundled: skills[parsed.data.name].location,
-            project: match,
+            existing: skills[parsed.data.name].location,
+            duplicate: match,
           })
-          return
         }
-        log.warn("duplicate skill name, overriding", {
-          name: parsed.data.name,
-          existing: skills[parsed.data.name].location,
-          duplicate: match,
-        })
-      }
 
-      skills[parsed.data.name] = {
-        name: parsed.data.name,
-        description: parsed.data.description,
-        location: match,
-      }
-      if (isBundled) {
-        bundledSkillLocations.add(match)
-      }
-      log.info("loaded skill", { name: parsed.data.name, location: match, bundled: isBundled })
+        skills[parsed.data.name] = {
+          name: parsed.data.name,
+          description: parsed.data.description,
+          location: match,
+        }
+        if (isBundled) {
+          bundledSkillLocations.add(match)
+        }
+        log.info("loaded skill", { name: parsed.data.name, location: match, bundled: isBundled })
       } catch (error) {
         log.error("error loading skill", { path: match, error, isBundled })
       }

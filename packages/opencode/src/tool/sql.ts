@@ -472,7 +472,10 @@ export const SqlTool = Tool.define("sql", {
     query: z.string().describe("The SQL query to execute. Use parameterized queries with ? placeholders for safety."),
     params: z.array(z.any()).optional().describe("Parameters for parameterized queries"),
     databaseUrl: z.string().optional().describe("Database connection URL (overrides auto-detection)"),
-    databaseType: z.enum(["mysql", "postgresql", "sqlite"]).optional().describe("Database type (overrides auto-detection)"),
+    databaseType: z
+      .enum(["mysql", "postgresql", "sqlite"])
+      .optional()
+      .describe("Database type (overrides auto-detection)"),
   }),
   async execute(params, ctx) {
     // Check permission

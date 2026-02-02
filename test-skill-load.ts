@@ -9,7 +9,12 @@ async function main() {
   console.log("1. All loaded skills:")
   const allSkills = await Skill.all()
   console.log(`   Total: ${allSkills.length}`)
-  console.log(`   Names: ${allSkills.map((s) => s.name).sort().join(", ")}`)
+  console.log(
+    `   Names: ${allSkills
+      .map((s) => s.name)
+      .sort()
+      .join(", ")}`,
+  )
   console.log()
 
   // Test 2: Check g6-parser specifically

@@ -18,6 +18,7 @@ import PROMPT_SPECKIT_INGEST from "./template/speckit-ingest.txt"
 import PROMPT_SPECKIT_VIBE from "./template/speckit-vibe.txt"
 import PROMPT_DDD_VIBE from "./template/ddd-vibe.txt"
 import PROMPT_G6_IMPLEMENT from "./template/g6-implement.txt"
+import PROMPT_G6_SCENARIO_TESTS from "./template/g6-scenario-tests.txt"
 import PROMPT_DDD_INIT from "./template/ddd-init.txt"
 import PROMPT_DDD_CONSTITUTION from "./template/ddd-constitution.txt"
 import PROMPT_DDD_INGEST from "./template/ddd-ingest.txt"
@@ -123,6 +124,7 @@ export namespace Command {
     DDD_IMPLEMENT: "ddd.implement",
     DDD_VIBE: "ddd.vibe",
     G6_IMPLEMENT: "g6.implement",
+    G6_SCENARIO_TESTS: "g6.scenario-tests",
     PRODUCT_ASSET_EXTRACT: "product-asset.extract",
   } as const
 
@@ -447,7 +449,8 @@ export namespace Command {
       },
       [Default.DDD_VIBE]: {
         name: Default.DDD_VIBE,
-        description: "interactive DDD vibecoding (clarify → requirements → strategic/tactical/services → auto implement)",
+        description:
+          "interactive DDD vibecoding (clarify → requirements → strategic/tactical/services → auto implement)",
         agent: "ddd-vibe",
         get template() {
           return PROMPT_DDD_VIBE
@@ -457,11 +460,20 @@ export namespace Command {
       [Default.G6_IMPLEMENT]: {
         name: Default.G6_IMPLEMENT,
         description: "parse G6 JSON design file and generate code implementation",
-        agent: "g6-parser",
+        agent: "parser",
         get template() {
           return PROMPT_G6_IMPLEMENT
         },
         hints: hints(PROMPT_G6_IMPLEMENT),
+      },
+      [Default.G6_SCENARIO_TESTS]: {
+        name: Default.G6_SCENARIO_TESTS,
+        description: "generate scenario-based test cases from G6 JSON design file",
+        agent: "g6-scenario-tests",
+        get template() {
+          return PROMPT_G6_SCENARIO_TESTS
+        },
+        hints: hints(PROMPT_G6_SCENARIO_TESTS),
       },
       [Default.PRODUCT_ASSET_EXTRACT]: {
         name: Default.PRODUCT_ASSET_EXTRACT,

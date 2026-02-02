@@ -79,13 +79,13 @@ import { formatTranscript } from "../../util/transcript"
 addDefaultParsers(parsers.parsers)
 
 class CustomSpeedScroll implements ScrollAcceleration {
-  constructor(private speed: number) { }
+  constructor(private speed: number) {}
 
   tick(_now?: number): number {
     return this.speed
   }
 
-  reset(): void { }
+  reset(): void {}
 }
 
 const context = createContext<{
@@ -298,29 +298,29 @@ export function Session() {
   command.register(() => [
     ...(sync.data.config.share !== "disabled"
       ? [
-        {
-          title: "Share session",
-          value: "session.share",
-          suggested: route.type === "session",
-          keybind: "session_share" as const,
-          disabled: !!session()?.share?.url,
-          category: "Session",
-          onSelect: async (dialog: any) => {
-            await sdk.client.session
-              .share({
-                sessionID: route.sessionID,
-              })
-              .then((res) =>
-                Clipboard.copy(res.data!.share!.url).catch(() =>
-                  toast.show({ message: "Failed to copy URL to clipboard", variant: "error" }),
-                ),
-              )
-              .then(() => toast.show({ message: "Share URL copied to clipboard!", variant: "success" }))
-              .catch(() => toast.show({ message: "Failed to share session", variant: "error" }))
-            dialog.clear()
+          {
+            title: "Share session",
+            value: "session.share",
+            suggested: route.type === "session",
+            keybind: "session_share" as const,
+            disabled: !!session()?.share?.url,
+            category: "Session",
+            onSelect: async (dialog: any) => {
+              await sdk.client.session
+                .share({
+                  sessionID: route.sessionID,
+                })
+                .then((res) =>
+                  Clipboard.copy(res.data!.share!.url).catch(() =>
+                    toast.show({ message: "Failed to copy URL to clipboard", variant: "error" }),
+                  ),
+                )
+                .then(() => toast.show({ message: "Share URL copied to clipboard!", variant: "success" }))
+                .catch(() => toast.show({ message: "Failed to share session", variant: "error" }))
+              dialog.clear()
+            },
           },
-        },
-      ]
+        ]
       : []),
     {
       title: "Rename session",
@@ -416,7 +416,7 @@ export function Session() {
       category: "Session",
       onSelect: async (dialog) => {
         const status = sync.data.session_status?.[route.sessionID]
-        if (status?.type !== "idle") await sdk.client.session.abort({ sessionID: route.sessionID }).catch(() => { })
+        if (status?.type !== "idle") await sdk.client.session.abort({ sessionID: route.sessionID }).catch(() => {})
         const revert = session()?.revert?.messageID
         const message = messages().findLast((x) => (!revert || x.id < revert) && x.role === "user")
         if (!message) return
@@ -1323,14 +1323,25 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
   const { theme } = useTheme()
   const { navigate } = useRoute()
   const metadata = props.metadata as any
-  const phase = metadata.phase as "analyze" | "plan" | "build" | "test_plan" | "test_run" | "test" | "fix" | "commit" | undefined
+  const phase = metadata.phase as
+    | "analyze"
+    | "plan"
+    | "build"
+    | "test_plan"
+    | "test_run"
+    | "test"
+    | "fix"
+    | "commit"
+    | undefined
   const workflow = metadata.workflow as string | undefined
   const stepIndex = metadata.stepIndex as number | undefined
   const totalSteps = metadata.totalSteps as number | undefined
   const status = metadata.status as string | undefined
   const agent = metadata.agent as string | undefined
   const progress = metadata.progress as number | undefined
-  const steps = metadata.steps as Array<{ id: string; success: boolean; sessionID?: string; agent?: string; skipped?: boolean }> | undefined
+  const steps = metadata.steps as
+    | Array<{ id: string; success: boolean; sessionID?: string; agent?: string; skipped?: boolean }>
+    | undefined
   const successCount = metadata.successCount as number | undefined
   const skippedCount = metadata.skippedCount as number | undefined
   const failedCount = metadata.failedCount as number | undefined
@@ -1377,7 +1388,10 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
   // Group steps by phase
   const stepsByPhase = createMemo(() => {
     if (!steps) return {}
-    const grouped: Record<string, Array<{ id: string; success: boolean; sessionID?: string; agent?: string; skipped?: boolean }>> = {}
+    const grouped: Record<
+      string,
+      Array<{ id: string; success: boolean; sessionID?: string; agent?: string; skipped?: boolean }>
+    > = {}
     for (const step of steps) {
       const phaseId = getPhaseFromStepId(step.id) || "unknown"
       if (!grouped[phaseId]) {
@@ -1399,9 +1413,7 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
   }
 
   const phaseLabel = phase ? phaseLabels[phase] || phase : undefined
-  const title = workflow
-    ? `# ${workflow}${phaseLabel ? ` - ${phaseLabel}` : ""}`
-    : "# Workflow"
+  const title = workflow ? `# ${workflow}${phaseLabel ? ` - ${phaseLabel}` : ""}` : "# Workflow"
 
   // Format duration
   const formatDuration = (ms: number): string => {
@@ -1424,7 +1436,9 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
     return [...outputLines().slice(0, 20), "…"].join("\n")
   })
 
-  const isCompleted = createMemo(() => status === "completed" || status === "completed_with_failures" || props.output !== undefined)
+  const isCompleted = createMemo(
+    () => status === "completed" || status === "completed_with_failures" || props.output !== undefined,
+  )
 
   return (
     <BlockTool
@@ -1450,16 +1464,8 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
             <For each={phaseDefinitions}>
               {(phaseDef) => {
                 const phaseStatus = getPhaseStatus(phaseDef.id)
-                const statusIcon = phaseStatus.hasSteps
-                  ? phaseStatus.allSuccess
-                    ? "✓"
-                    : "✗"
-                  : "⏭"
-                const statusText = phaseStatus.hasSteps
-                  ? phaseStatus.allSuccess
-                    ? "Complete"
-                    : "Failed"
-                  : "Skipped"
+                const statusIcon = phaseStatus.hasSteps ? (phaseStatus.allSuccess ? "✓" : "✗") : "⏭"
+                const statusText = phaseStatus.hasSteps ? (phaseStatus.allSuccess ? "Complete" : "Failed") : "Skipped"
                 const statusColor = phaseStatus.hasSteps
                   ? phaseStatus.allSuccess
                     ? theme.success
@@ -1469,7 +1475,10 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
                 return (
                   <text fg={theme.text}>
                     {phaseDef.label}
-                    <span style={{ fg: statusColor }}> {statusIcon} {statusText}</span>
+                    <span style={{ fg: statusColor }}>
+                      {" "}
+                      {statusIcon} {statusText}
+                    </span>
                   </text>
                 )
               }}
@@ -1478,7 +1487,11 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
         </Show>
 
         {/* Statistics */}
-        <Show when={isCompleted() && (successCount !== undefined || skippedCount !== undefined || failedCount !== undefined)}>
+        <Show
+          when={
+            isCompleted() && (successCount !== undefined || skippedCount !== undefined || failedCount !== undefined)
+          }
+        >
           <box flexDirection="column" gap={0}>
             <text fg={theme.textMuted}>
               Progress: {progress !== undefined ? `${progress}%` : "100%"} | Steps:{" "}
@@ -1495,10 +1508,7 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
                 {" "}
                 | <span style={{ fg: theme.textMuted }}>⏭ {skippedCount}</span>
               </Show>
-              <Show when={totalDuration !== undefined && totalDuration > 0}>
-                {" "}
-                | {formatDuration(totalDuration!)}
-              </Show>
+              <Show when={totalDuration !== undefined && totalDuration > 0}> | {formatDuration(totalDuration!)}</Show>
             </text>
           </box>
         </Show>
@@ -1515,9 +1525,7 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
 
             {/* Current Phase Display */}
             <Show when={phase}>
-              <text fg={theme.text}>
-                Current Phase: {phaseLabels[phase!] || phase!}
-              </text>
+              <text fg={theme.text}>Current Phase: {phaseLabels[phase!] || phase!}</text>
             </Show>
 
             {/* Step Progress */}
@@ -1553,10 +1561,7 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
         {/* Steps List (expandable) */}
         <Show when={isCompleted() && steps && steps.length > 0}>
           <box flexDirection="column" gap={0}>
-            <text
-              fg={theme.textMuted}
-              onMouseUp={() => setExpandedSteps((prev) => !prev)}
-            >
+            <text fg={theme.textMuted} onMouseUp={() => setExpandedSteps((prev) => !prev)}>
               {expandedSteps() ? "▼" : "▶"} Steps List ({steps?.length || 0})
             </text>
             <Show when={expandedSteps()}>
@@ -1606,15 +1611,9 @@ function Orchestrate(props: ToolProps<typeof OrchestrateTool>) {
         {/* Full Output (expandable) */}
         <Show when={isCompleted() && (props.output || currentOutput)}>
           <box flexDirection="column" gap={0}>
-            <text
-              fg={theme.textMuted}
-              onMouseUp={() => setExpandedOutput((prev) => !prev)}
-            >
+            <text fg={theme.textMuted} onMouseUp={() => setExpandedOutput((prev) => !prev)}>
               {expandedOutput() ? "▼" : "▶"} Full Output
-              <Show when={outputOverflow()}>
-                {" "}
-                ({outputLines().length} lines)
-              </Show>
+              <Show when={outputOverflow()}> ({outputLines().length} lines)</Show>
             </text>
             <Show when={expandedOutput() || !outputOverflow()}>
               <box paddingLeft={2}>

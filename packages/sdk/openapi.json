@@ -1495,6 +1495,130 @@
         ]
       }
     },
+    "/session/hosted/run": {
+      "post": {
+        "operationId": "session.hosted.run",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "directory",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "summary": "Run hosted (background) command",
+        "description": "Create a session with full permissions and run a command in the background. When the session completes, a TUI toast is shown. No user interaction is required during execution.",
+        "responses": {
+          "200": {
+            "description": "Hosted run started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessionID": {
+                      "description": "Session ID for the hosted run",
+                      "type": "string"
+                    }
+                  },
+                  "required": ["sessionID"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "messageID": {
+                    "type": "string",
+                    "pattern": "^msg.*"
+                  },
+                  "agent": {
+                    "type": "string"
+                  },
+                  "model": {
+                    "type": "string"
+                  },
+                  "arguments": {
+                    "type": "string"
+                  },
+                  "command": {
+                    "type": "string"
+                  },
+                  "variant": {
+                    "type": "string"
+                  },
+                  "parts": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "const": "file"
+                            },
+                            "mime": {
+                              "type": "string"
+                            },
+                            "filename": {
+                              "type": "string"
+                            },
+                            "url": {
+                              "type": "string"
+                            },
+                            "source": {
+                              "$ref": "#/components/schemas/FilePartSource"
+                            }
+                          },
+                          "required": ["type", "mime", "url"]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": ["arguments", "command"]
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.session.hosted.run({\n  ...\n})"
+          }
+        ]
+      }
+    },
     "/session/{sessionID}/init": {
       "post": {
         "operationId": "session.init",
@@ -7272,6 +7396,11 @@
             "properties": {
               "file": {
                 "type": "string"
+              },
+              "tool": {
+                "description": "Tool that triggered the edit",
+                "type": "string",
+                "enum": ["write", "edit"]
               }
             },
             "required": ["file"]
@@ -7322,6 +7451,99 @@
               }
             },
             "required": ["sessionID", "todos"]
+          }
+        },
+        "required": ["type", "properties"]
+      },
+      "Thought": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "description": "Thought number in the sequence",
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "content": {
+            "description": "The thought content",
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "Timestamp when the thought was added",
+            "type": "number"
+          },
+          "isRevision": {
+            "description": "Whether this thought revises a previous thought",
+            "type": "boolean"
+          },
+          "revisesThought": {
+            "description": "The thought number being revised",
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "branchFromThought": {
+            "description": "The thought number this branch originates from",
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "branchId": {
+            "description": "Identifier for the branch",
+            "type": "string"
+          }
+        },
+        "required": ["number", "content", "timestamp"]
+      },
+      "ThoughtChain": {
+        "type": "object",
+        "properties": {
+          "thoughts": {
+            "description": "Array of thoughts in the chain",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Thought"
+            }
+          },
+          "totalThoughts": {
+            "description": "Total number of thoughts estimated",
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "currentBranch": {
+            "description": "Current branch identifier",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Timestamp when the chain was created",
+            "type": "number"
+          },
+          "updatedAt": {
+            "description": "Timestamp when the chain was last updated",
+            "type": "number"
+          }
+        },
+        "required": ["thoughts", "totalThoughts", "createdAt", "updatedAt"]
+      },
+      "Event.sequential_thinking.updated": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "sequential_thinking.updated"
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "sessionID": {
+                "type": "string"
+              },
+              "chain": {
+                "$ref": "#/components/schemas/ThoughtChain"
+              }
+            },
+            "required": ["sessionID", "chain"]
           }
         },
         "required": ["type", "properties"]
@@ -7985,6 +8207,9 @@
           },
           {
             "$ref": "#/components/schemas/Event.todo.updated"
+          },
+          {
+            "$ref": "#/components/schemas/Event.sequential_thinking.updated"
           },
           {
             "$ref": "#/components/schemas/Event.tui.prompt.append"
@@ -8673,6 +8898,12 @@
               },
               "doom_loop": {
                 "$ref": "#/components/schemas/PermissionActionConfig"
+              },
+              "sql": {
+                "$ref": "#/components/schemas/PermissionRuleConfig"
+              },
+              "config_reader": {
+                "$ref": "#/components/schemas/PermissionRuleConfig"
               }
             },
             "additionalProperties": {
@@ -9460,6 +9691,39 @@
           "permission": {
             "$ref": "#/components/schemas/PermissionConfig"
           },
+          "rules": {
+            "type": "object",
+            "properties": {
+              "noSecrets": {
+                "description": "Reject or ask when edit/write contains likely hardcoded secrets",
+                "type": "boolean"
+              },
+              "tdd": {
+                "description": "Enforce TDD and optional coverage target in system prompt",
+                "type": "object",
+                "properties": {
+                  "enforce": {
+                    "type": "boolean"
+                  },
+                  "coverage": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": ["enforce"]
+              },
+              "gitCommitFormat": {
+                "description": "Validate git commit -m format in bash tool",
+                "type": "string",
+                "enum": ["conventional", "angular", "none"]
+              },
+              "delegateToSubagent": {
+                "description": "Path to .md or inline text: when to delegate to subagents; injected into system prompt",
+                "type": "string"
+              }
+            }
+          },
           "tools": {
             "type": "object",
             "propertyNames": {
@@ -9550,6 +9814,36 @@
                       },
                       "required": ["command"]
                     }
+                  },
+                  "codeHygiene": {
+                    "type": "object",
+                    "properties": {
+                      "warnConsoleLog": {
+                        "description": "Warn when written content contains console.log",
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "docControl": {
+                    "type": "object",
+                    "properties": {
+                      "allowPaths": {
+                        "description": "Glob patterns for doc files that don't need create_doc ask (e.g. docs/**, CHANGELOG*)",
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "defaultPermission": {
+                        "description": "Default for create_doc when not in allowPaths",
+                        "type": "string",
+                        "enum": ["ask", "deny"]
+                      }
+                    }
+                  },
+                  "pushConfirm": {
+                    "description": "Require extra confirmation before git push",
+                    "type": "boolean"
                   }
                 }
               },
@@ -9584,6 +9878,19 @@
                 "type": "integer",
                 "exclusiveMinimum": 0,
                 "maximum": 9007199254740991
+              },
+              "memory": {
+                "type": "object",
+                "properties": {
+                  "persist": {
+                    "description": "Persist session summary across sessions",
+                    "type": "boolean"
+                  },
+                  "maxSummaryTokens": {
+                    "description": "Max tokens for the context summary (default 500)",
+                    "type": "number"
+                  }
+                }
               }
             }
           }
@@ -9833,6 +10140,10 @@
             "items": {
               "type": "string"
             }
+          },
+          "handler": {
+            "description": "Built-in handler: e.g. 'learn' for /learn",
+            "type": "string"
           }
         },
         "required": ["name", "template", "hints"]

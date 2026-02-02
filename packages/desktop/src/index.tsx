@@ -318,19 +318,47 @@ render(() => {
 
 type ServerReadyData = { url: string; password: string | null }
 
+function spawnErrorMessage(err: unknown): string {
+  if (typeof err === "string") return err
+  if (err instanceof Error) return err.message
+  return String(err)
+}
+
 // Gate component that waits for the server to be ready
 function ServerGate(props: { children: (data: Accessor<ServerReadyData>) => JSX.Element }) {
-  const [serverData] = createResource<ServerReadyData>(() => invoke("ensure_server_ready"))
+  const [serverData, { refetch }] = createResource<ServerReadyData>(() => invoke("ensure_server_ready"))
 
   return (
     // Not using suspense as not all components are compatible with it (undefined refs)
     <Show
-      when={serverData.state !== "pending" && serverData()}
+      when={serverData.state === "ready" && serverData()}
       fallback={
-        <div class="h-screen w-screen flex flex-col items-center justify-center bg-background-base">
-          <Logo class="w-xl opacity-12 animate-pulse" />
-          <div class="mt-8 text-14-regular text-text-weak">Initializing...</div>
-        </div>
+        <Show
+          when={serverData.state !== "errored"}
+          fallback={
+            <div class="h-screen w-screen flex flex-col items-center justify-center bg-background-base gap-6 px-6">
+              <Logo class="w-xl opacity-12" />
+              <div class="flex flex-col items-center gap-2 text-center max-w-xl">
+                <div class="text-14-medium text-text-strong">Could not start OpenCode Server</div>
+                <pre class="text-12-regular text-text-weak whitespace-pre-wrap font-mono text-left w-full rounded bg-background-elevated p-4 overflow-auto max-h-80">
+                  {spawnErrorMessage(serverData.error)}
+                </pre>
+              </div>
+              <button
+                type="button"
+                class="px-4 py-2 rounded-md bg-accent-base text-accent-fg text-14-medium hover:bg-accent-hover"
+                onClick={() => refetch()}
+              >
+                Retry
+              </button>
+            </div>
+          }
+        >
+          <div class="h-screen w-screen flex flex-col items-center justify-center bg-background-base">
+            <Logo class="w-xl opacity-12 animate-pulse" />
+            <div class="mt-8 text-14-regular text-text-weak">Initializing...</div>
+          </div>
+        </Show>
       }
     >
       {(data) => props.children(data)}

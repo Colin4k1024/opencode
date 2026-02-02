@@ -857,7 +857,8 @@ export const OrchestrateTool = Tool.define("orchestrate", {
 
       // Add output text
       if (result.outputText && result.outputText.trim().length > 0) {
-        const outputPreview = result.outputText.length > 300 ? result.outputText.substring(0, 300) + "..." : result.outputText
+        const outputPreview =
+          result.outputText.length > 300 ? result.outputText.substring(0, 300) + "..." : result.outputText
         outputParts.push(`\n   📄 输出:\n      ${outputPreview.replace(/\n/g, "\n      ")}\n`)
       } else if (result.output && result.output.trim().length > 0) {
         const outputPreview = result.output.length > 300 ? result.output.substring(0, 300) + "..." : result.output

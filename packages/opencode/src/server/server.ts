@@ -52,6 +52,7 @@ import { errors } from "./error"
 import { Pty } from "@/pty"
 import { PermissionNext } from "@/permission/next"
 import { QuestionRoute } from "./question"
+import { HostedRoute } from "./hosted-route"
 import { Installation } from "@/installation"
 import { MDNS } from "./mdns"
 import { Worktree } from "../worktree"
@@ -78,6 +79,7 @@ export namespace Server {
   export const App: () => Hono = lazy(
     () =>
       // TODO: Break server.ts into smaller route files to fix type inference
+      // @ts-expect-error - chain is too long for TS to infer; cast at end
       app
         .onError((err, c) => {
           log.error("failed", {
@@ -890,6 +892,7 @@ export namespace Server {
             return c.json(session)
           },
         )
+        .route("/session", HostedRoute)
         .delete(
           "/session/:sessionID",
           describeRoute({

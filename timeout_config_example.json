@@ -1,13 +1,13 @@
 {
   "lsp": {
-    "timeout": 90000,  // 90 seconds for LSP initialization
-    "diagnosticsTimeout": 5000  // 5 seconds for diagnostics
+    "timeout": 90000, // 90 seconds for LSP initialization
+    "diagnosticsTimeout": 5000 // 5 seconds for diagnostics
   },
   "mcp": {
-    "timeout": 60000,  // 60 seconds for MCP connections
-    "listToolsTimeout": 30000  // 30 seconds for tool listing
+    "timeout": 60000, // 60 seconds for MCP connections
+    "listToolsTimeout": 30000 // 30 seconds for tool listing
   },
   "fileWatcher": {
-    "subscribeTimeout": 15000  // 15 seconds for file watcher subscription
+    "subscribeTimeout": 15000 // 15 seconds for file watcher subscription
   }
 }

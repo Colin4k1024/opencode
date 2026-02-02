@@ -1605,8 +1605,7 @@ NOTE: At any point in time through this workflow you should feel free to ask the
         sessionID: input.sessionID,
         arguments: input.arguments,
       })
-      const model =
-        (await lastModel(input.sessionID)) ?? (await Provider.defaultModel())
+      const model = (await lastModel(input.sessionID)) ?? (await Provider.defaultModel())
       const agentName = await Agent.defaultAgent()
       const result = (await prompt({
         sessionID: input.sessionID,

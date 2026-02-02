@@ -13,7 +13,10 @@ async function runScripts(
   if (!items?.length) return
   for (const item of items) {
     const cmd = item.command.map((c) =>
-      c.replace(/\$FILE/g, env.FILE || "").replace(/\$TOOL/g, env.TOOL || "").replace(/\$SESSION_ID/g, env.SESSION_ID || ""),
+      c
+        .replace(/\$FILE/g, env.FILE || "")
+        .replace(/\$TOOL/g, env.TOOL || "")
+        .replace(/\$SESSION_ID/g, env.SESSION_ID || ""),
     )
     log.info("running hook script", { command: cmd })
     const proc = Bun.spawn({
@@ -31,17 +34,16 @@ async function runScripts(
   }
 }
 
-export async function runFileEditedHooks(
-  cfg: Config.Info,
-  payload: { file: string; tool?: "write" | "edit" },
-) {
+export async function runFileEditedHooks(cfg: Config.Info, payload: { file: string; tool?: "write" | "edit" }) {
   const h = cfg.experimental?.hook?.file_edited
   if (!h || typeof h !== "object") return
   const arr = payload.tool
-    ? (Array.isArray((h as Record<string, unknown>)[payload.tool])
-        ? (h as Record<string, unknown>)[payload.tool]
-        : [])
-    : (Array.isArray((h as Record<string, unknown>)["*"]) ? (h as Record<string, unknown>)["*"] : [])
+    ? Array.isArray((h as Record<string, unknown>)[payload.tool])
+      ? (h as Record<string, unknown>)[payload.tool]
+      : []
+    : Array.isArray((h as Record<string, unknown>)["*"])
+      ? (h as Record<string, unknown>)["*"]
+      : []
   const list = Array.isArray(arr) ? (arr as Array<{ command: string[]; environment?: Record<string, string> }>) : []
   await runScripts(list, { FILE: payload.file, TOOL: payload.tool || "" })
 }

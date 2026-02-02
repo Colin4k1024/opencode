@@ -1054,8 +1054,14 @@ export namespace Config {
                 .optional(),
               docControl: z
                 .object({
-                  allowPaths: z.array(z.string()).optional().describe("Glob patterns for doc files that don't need create_doc ask (e.g. docs/**, CHANGELOG*)"),
-                  defaultPermission: z.enum(["ask", "deny"]).optional().describe("Default for create_doc when not in allowPaths"),
+                  allowPaths: z
+                    .array(z.string())
+                    .optional()
+                    .describe("Glob patterns for doc files that don't need create_doc ask (e.g. docs/**, CHANGELOG*)"),
+                  defaultPermission: z
+                    .enum(["ask", "deny"])
+                    .optional()
+                    .describe("Default for create_doc when not in allowPaths"),
                 })
                 .optional(),
               pushConfirm: z.boolean().optional().describe("Require extra confirmation before git push"),

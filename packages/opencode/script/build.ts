@@ -168,7 +168,12 @@ for (const item of targets) {
 // Copy bundled skills to global directory ~/.opencode/skills/
 const skillsSourceDir = path.join(dir, "skills")
 const globalSkillsDir = path.join(os.homedir(), ".opencode", "skills")
-if (await fs.promises.stat(skillsSourceDir).then(() => true).catch(() => false)) {
+if (
+  await fs.promises
+    .stat(skillsSourceDir)
+    .then(() => true)
+    .catch(() => false)
+) {
   console.log(`copying bundled skills to ${globalSkillsDir}`)
   await fs.promises.mkdir(globalSkillsDir, { recursive: true })
   // Copy all skill subdirectories
@@ -183,7 +188,7 @@ if (await fs.promises.stat(skillsSourceDir).then(() => true).catch(() => false))
       await $`cp -r ${sourcePath} ${targetPath}`.cwd(dir).quiet()
     }
   }
-  console.log(`copied ${skillDirs.filter(d => d.isDirectory()).length} bundled skills to global directory`)
+  console.log(`copied ${skillDirs.filter((d) => d.isDirectory()).length} bundled skills to global directory`)
 }
 
 export { binaries }

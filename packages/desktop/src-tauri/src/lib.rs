@@ -155,8 +155,7 @@ fn spawn_sidecar(app: &AppHandle, port: u32, password: &str) -> CommandChild {
 
     println!("spawning sidecar on port {port}");
 
-    let (mut rx, child) = cli::create_command(app, format!("serve --port {port}").as_str())
-        .env("OPENCODE_SERVER_PASSWORD", password)
+    let (mut rx, child) = cli::create_serve_command(app, port, password)
         .spawn()
         .expect("Failed to spawn opencode");
 
@@ -444,6 +443,9 @@ async fn spawn_local_server(
     let child = spawn_sidecar(app, port, password);
     let url = format!("http://127.0.0.1:{port}");
 
+    // Allow time for shell and server to start (e.g. oh-my-zsh on macOS)
+    tokio::time::sleep(Duration::from_secs(2)).await;
+
     let timestamp = Instant::now();
     loop {
         if timestamp.elapsed() > Duration::from_secs(30) {
@@ -453,7 +455,7 @@ async fn spawn_local_server(
             ));
         }
 
-        tokio::time::sleep(Duration::from_millis(10)).await;
+        tokio::time::sleep(Duration::from_millis(100)).await;
 
         if check_server_health(&url, Some(password)).await {
             println!("Server ready after {:?}", timestamp.elapsed());

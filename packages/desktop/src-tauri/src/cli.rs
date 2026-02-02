@@ -144,6 +144,28 @@ fn get_user_shell() -> String {
     std::env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())
 }
 
+/// Run the opencode-cli sidecar directly (no shell). Used for `serve` so env and port
+/// are reliable and startup is fast (no oh-my-zsh etc.).
+pub fn create_serve_command(
+    app: &tauri::AppHandle,
+    port: u32,
+    password: &str,
+) -> Command {
+    let state_dir = app
+        .path()
+        .resolve("", BaseDirectory::AppLocalData)
+        .expect("Failed to resolve app local data dir");
+
+    app.shell()
+        .sidecar("opencode-cli")
+        .expect("opencode-cli sidecar not found")
+        .args(["serve", "--port", &port.to_string()])
+        .env("OPENCODE_EXPERIMENTAL_ICON_DISCOVERY", "true")
+        .env("OPENCODE_CLIENT", "desktop")
+        .env("XDG_STATE_HOME", &state_dir)
+        .env("OPENCODE_SERVER_PASSWORD", password)
+}
+
 pub fn create_command(app: &tauri::AppHandle, args: &str) -> Command {
     let state_dir = app
         .path()

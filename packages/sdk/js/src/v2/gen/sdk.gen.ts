@@ -105,6 +105,8 @@ import type {
   SessionForkResponses,
   SessionGetErrors,
   SessionGetResponses,
+  SessionHostedRunErrors,
+  SessionHostedRunResponses,
   SessionInitErrors,
   SessionInitResponses,
   SessionListResponses,
@@ -768,6 +770,62 @@ export class Vcs extends HeyApiClient {
       url: "/vcs",
       ...options,
       ...params,
+    })
+  }
+}
+
+export class Hosted extends HeyApiClient {
+  /**
+   * Run hosted (background) command
+   *
+   * Create a session with full permissions and run a command in the background. When the session completes, a TUI toast is shown. No user interaction is required during execution.
+   */
+  public run<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      messageID?: string
+      agent?: string
+      model?: string
+      arguments?: string
+      command?: string
+      variant?: string
+      parts?: Array<{
+        id?: string
+        type: "file"
+        mime: string
+        filename?: string
+        url: string
+        source?: FilePartSource
+      }>
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "body", key: "messageID" },
+            { in: "body", key: "agent" },
+            { in: "body", key: "model" },
+            { in: "body", key: "arguments" },
+            { in: "body", key: "command" },
+            { in: "body", key: "variant" },
+            { in: "body", key: "parts" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<SessionHostedRunResponses, SessionHostedRunErrors, ThrowOnError>({
+      url: "/session/hosted/run",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
     })
   }
 }
@@ -1613,6 +1671,8 @@ export class Session extends HeyApiClient {
       ...params,
     })
   }
+
+  hosted = new Hosted({ client: this.client })
 }
 
 export class Part extends HeyApiClient {

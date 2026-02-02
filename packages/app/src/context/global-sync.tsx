@@ -497,10 +497,11 @@ function createGlobalSync() {
       .then((x) => x.data)
       .catch(() => undefined)
     if (!health?.healthy) {
-      setGlobalStore(
-        "error",
-        new Error(`Could not connect to server. Is there a server running at \`${globalSDK.url}\`?`),
-      )
+      const hint =
+        globalSDK.url.includes(":4096") || globalSDK.url.includes("localhost")
+          ? " Start the server with: opencode serve --port 4096"
+          : ""
+      setGlobalStore("error", new Error(`Could not connect to server at \`${globalSDK.url}\`.${hint}`))
       return
     }
 

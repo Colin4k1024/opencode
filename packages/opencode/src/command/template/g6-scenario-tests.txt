@@ -1,0 +1,10 @@
+Generate scenario-based test cases from a G6 JSON design file.
+
+Input: $ARGUMENTS (G6 file path or @file reference)
+
+## Instructions
+- Use the g6-scenario-tests workflow:
+  - Parse the G6 JSON file via g6-parser skill (Level 1 → 2 → 3, Level 4 only for scenario-critical nodes)
+  - Identify scenarios: interface, process, entity/domain, integration, E2E user
+  - Write the scenario test document to .opencode/g6/<projectId>/scenario-tests.md
+- Do not write application code or run tests.

@@ -26,6 +26,7 @@ import PROMPT_SPECKIT from "./prompt/speckit.txt"
 import PROMPT_SPECKIT_VIBE from "./prompt/speckit-vibe.txt"
 import PROMPT_DDD_VIBE from "./prompt/ddd-vibe.txt"
 import PROMPT_PARSER from "./prompt/parser.txt"
+import PROMPT_G6_SCENARIO_TESTS from "./prompt/g6-scenario-tests.txt"
 import PROMPT_PRODUCT_ASSET_EXTRACTOR from "./prompt/product-asset-extractor.txt"
 import { PermissionNext } from "@/permission/next"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
@@ -473,6 +474,30 @@ export namespace Agent {
           user,
         ),
         prompt: PROMPT_PARSER,
+        options: {},
+        mode: "primary",
+        native: true,
+      },
+      "g6-scenario-tests": {
+        name: "g6-scenario-tests",
+        description: `Parse G6 JSON design files via g6-parser skill and generate scenario-based test cases (interface, process, entity, integration, E2E). Output: .opencode/g6/<projectId>/scenario-tests.md. Does not write code or run tests.`,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            read: "allow",
+            glob: "allow",
+            grep: "allow",
+            list: "allow",
+            question: "allow",
+            skill: "allow",
+            // write tool is gated by "edit" permission in permission/next.ts (EDIT_TOOLS)
+            edit: "allow",
+            external_directory: { [Truncate.DIR]: "allow", [Truncate.GLOB]: "allow" },
+          }),
+          user,
+        ),
+        prompt: PROMPT_G6_SCENARIO_TESTS,
         options: {},
         mode: "primary",
         native: true,

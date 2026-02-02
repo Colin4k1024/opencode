@@ -13,7 +13,12 @@ export namespace SequentialThinking {
       timestamp: z.number().describe("Timestamp when the thought was added"),
       isRevision: z.boolean().optional().describe("Whether this thought revises a previous thought"),
       revisesThought: z.number().int().positive().optional().describe("The thought number being revised"),
-      branchFromThought: z.number().int().positive().optional().describe("The thought number this branch originates from"),
+      branchFromThought: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe("The thought number this branch originates from"),
       branchId: z.string().optional().describe("Identifier for the branch"),
     })
     .meta({ ref: "Thought" })
@@ -63,7 +68,9 @@ export namespace SequentialThinking {
         lines.push(`  (Revises Thought ${thought.revisesThought})`)
       }
       if (thought.branchFromThought) {
-        lines.push(`  (Branches from Thought ${thought.branchFromThought}${thought.branchId ? `, Branch: ${thought.branchId}` : ""})`)
+        lines.push(
+          `  (Branches from Thought ${thought.branchFromThought}${thought.branchId ? `, Branch: ${thought.branchId}` : ""})`,
+        )
       }
       lines.push(`  ${thought.content}`)
     }
@@ -78,15 +85,40 @@ export namespace SequentialThinking {
 }
 
 const parameters = z.object({
-  thought: z.string().describe("Your current thinking step, which can include analytical steps, revisions, questions, hypothesis generation, or verification"),
-  thoughtNumber: z.number().int().positive().describe("Current number in the sequence (can exceed initial estimate if needed)"),
-  totalThoughts: z.number().int().positive().describe("Current estimate of total thoughts needed (adjustable up or down)"),
+  thought: z
+    .string()
+    .describe(
+      "Your current thinking step, which can include analytical steps, revisions, questions, hypothesis generation, or verification",
+    ),
+  thoughtNumber: z
+    .number()
+    .int()
+    .positive()
+    .describe("Current number in the sequence (can exceed initial estimate if needed)"),
+  totalThoughts: z
+    .number()
+    .int()
+    .positive()
+    .describe("Current estimate of total thoughts needed (adjustable up or down)"),
   nextThoughtNeeded: z.boolean().describe("Whether another thought step is required, even at what seemed like the end"),
   isRevision: z.boolean().optional().describe("Whether this thought revises previous thinking"),
-  revisesThought: z.number().int().positive().optional().describe("Which thought number is being reconsidered if revising"),
-  branchFromThought: z.number().int().positive().optional().describe("Which thought number serves as the branching point"),
+  revisesThought: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe("Which thought number is being reconsidered if revising"),
+  branchFromThought: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe("Which thought number serves as the branching point"),
   branchId: z.string().optional().describe("Identifier for the current branch (if any)"),
-  needsMoreThoughts: z.boolean().optional().describe("Flag for realizing more thoughts are needed upon reaching the apparent end"),
+  needsMoreThoughts: z
+    .boolean()
+    .optional()
+    .describe("Flag for realizing more thoughts are needed upon reaching the apparent end"),
 })
 
 export const SequentialThinkingTool = Tool.define("sequential_thinking", {

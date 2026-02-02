@@ -440,6 +440,11 @@ export function Autocomplete(props: {
         onSelect: () => command.trigger("session.list"),
       },
       {
+        display: "/hosted",
+        description: "run command in background (hosted mode)",
+        onSelect: () => command.trigger("hosted.run"),
+      },
+      {
         display: "/status",
         description: "show status",
         onSelect: () => command.trigger("opencode.status"),

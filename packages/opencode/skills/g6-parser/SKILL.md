@@ -14,7 +14,9 @@ This skill provides methods to parse and hierarchically decompose large G6 JSON 
 G6 JSON files contain three main sections:
 
 ### Combos
+
 Module/group definitions that organize nodes:
+
 - `id`: Unique combo identifier
 - `label`: Human-readable name
 - `nodeType`: Type of combo (e.g., `service-layer`, `object-area`)
@@ -22,7 +24,9 @@ Module/group definitions that organize nodes:
 - `data.description`: Description of the module
 
 ### Nodes
+
 Individual design elements:
+
 - `id`: Unique node identifier
 - `label`: Human-readable name
 - `nodeType`: Type of node (e.g., `value-object`, `business-object`, `interface`, `mapper-interface`, `event-listener`)
@@ -30,7 +34,9 @@ Individual design elements:
 - `data`: Node-specific data (varies by nodeType)
 
 ### Edges
+
 Relationships between nodes:
+
 - `id`: Unique edge identifier
 - `source`: Source node ID
 - `target`: Target node ID
@@ -44,6 +50,7 @@ Relationships between nodes:
 Extract high-level summary without loading full node/edge data.
 
 **Steps:**
+
 1. Read G6 JSON file (use `read` tool, may need to read in chunks for very large files)
 2. Extract combos summary:
    ```bash
@@ -59,6 +66,7 @@ Extract high-level summary without loading full node/edge data.
 5. Generate overview summary
 
 **Output Format:**
+
 ```json
 {
   "combos": [
@@ -85,6 +93,7 @@ Extract high-level summary without loading full node/edge data.
 Parse nodes and edges within a specific combo/module.
 
 **Steps:**
+
 1. Select target combo ID
 2. Extract nodes in this combo:
    - Filter nodes where `comboId == targetComboId`
@@ -98,6 +107,7 @@ Parse nodes and edges within a specific combo/module.
 5. Generate module summary
 
 **Output Format:**
+
 ```json
 {
   "comboId": "service-layer-lzxt",
@@ -119,6 +129,7 @@ Parse nodes and edges within a specific combo/module.
 Extract all nodes of a specific type across the entire file or within a module.
 
 **Steps:**
+
 1. Select target node type (e.g., `value-object`)
 2. Optionally filter by combo ID
 3. Extract nodes of this type:
@@ -132,6 +143,7 @@ Extract all nodes of a specific type across the entire file or within a module.
 6. Generate node-type summary
 
 **Output Format:**
+
 ```json
 {
   "nodeType": "value-object",
@@ -152,6 +164,7 @@ Extract all nodes of a specific type across the entire file or within a module.
 Extract complete information for a specific node, including all related edges and dependencies.
 
 **Steps:**
+
 1. Select target node ID
 2. Load complete node data:
    - Find node by ID
@@ -168,6 +181,7 @@ Extract complete information for a specific node, including all related edges an
    - Generate code generation specifications
 
 **Output Format:**
+
 ```json
 {
   "node": {
@@ -224,6 +238,7 @@ Instead of loading the entire G6 JSON file into context:
 Cache parsed results to avoid re-parsing:
 
 **Cache Directory Structure:**
+
 ```
 .opencode/g6/
 └── <projectId>/
@@ -240,6 +255,7 @@ Cache parsed results to avoid re-parsing:
 ```
 
 **Benefits:**
+
 - Avoid re-parsing large files
 - Enable incremental updates
 - Support parallel processing
@@ -247,16 +263,19 @@ Cache parsed results to avoid re-parsing:
 ### Tools for Parsing
 
 **Option 1: Using read tool with line ranges**
+
 - For very large files, read specific sections
 - Use `grep` to find line numbers of specific patterns
 - Read only the needed sections
 
 **Option 2: Using bash with jq (if available)**
+
 - `jq` is a powerful JSON processor
 - Can extract specific fields efficiently
 - Can filter and transform JSON
 
 **Option 3: Using bash with custom scripts**
+
 - Write simple parsing scripts
 - Use standard JSON parsing tools
 - Extract and cache results
@@ -268,6 +287,7 @@ Cache parsed results to avoid re-parsing:
 **Goal:** Understand the overall structure
 
 **Steps:**
+
 1. Load `g6-parser` skill using `skill` tool
 2. Use Level 1 method to extract overview
 3. Review combos, node statistics, edge statistics
@@ -280,6 +300,7 @@ Cache parsed results to avoid re-parsing:
 **Goal:** Plan which modules to process and in what order
 
 **Steps:**
+
 1. Review overview to identify modules
 2. Analyze module dependencies (from overview)
 3. Determine processing order (dependencies first)
@@ -292,6 +313,7 @@ Cache parsed results to avoid re-parsing:
 **Goal:** Process each module incrementally
 
 **For each module:**
+
 1. Use Level 2 method to extract module structure
 2. Analyze module's node types and dependencies
 3. Within module, use Level 3 to group by node type
@@ -304,6 +326,7 @@ Cache parsed results to avoid re-parsing:
 **Goal:** Generate implementation tasks
 
 **For each node (in dependency order):**
+
 1. Use Level 4 method to load node details
 2. Analyze implementation requirements
 3. Check dependency status
@@ -316,6 +339,7 @@ Cache parsed results to avoid re-parsing:
 **Goal:** Implement code incrementally
 
 **For each task:**
+
 1. Load node details (Level 4) if not already loaded
 2. Call coding agent with task description
 3. Monitor implementation progress
@@ -328,6 +352,7 @@ Cache parsed results to avoid re-parsing:
 ### How Agent Should Use This Skill
 
 1. **Load skill first:**
+
    ```
    Use skill tool: skill("g6-parser")
    ```
