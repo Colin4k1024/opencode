@@ -1,10 +1,11 @@
 import { Bus } from "@/bus"
 import { TuiEvent } from "@/cli/cmd/tui/event"
 import { PermissionNext } from "@/permission/next"
+import { hostedSessionIDs } from "@/session/hosted-ids"
 import { SessionStatus } from "@/session/status"
 
-/** Session IDs for hosted (background) runs; when session goes idle we show Toast and remove. */
-export const hostedSessionIDs = new Set<string>()
+/** Re-export for route; when session goes idle we show Toast and remove from set. */
+export { hostedSessionIDs }
 
 /** Permission ruleset for hosted sessions: all allow so no TUI permission dialogs. */
 export const hostedPermissionRuleset = PermissionNext.fromConfig({

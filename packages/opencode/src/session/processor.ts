@@ -20,6 +20,24 @@ export namespace SessionProcessor {
   const DOOM_LOOP_THRESHOLD = 3
   const log = Log.create({ service: "session.processor" })
 
+  /** Normalize tool input to a record; MessageV2.ToolPart.state.input expects z.record, but providers may send a string. */
+  function normalizeToolInput(input: unknown): Record<string, unknown> {
+    if (input != null && typeof input === "object" && !Array.isArray(input)) {
+      return input as Record<string, unknown>
+    }
+    if (typeof input === "string") {
+      try {
+        const parsed = JSON.parse(input) as unknown
+        if (parsed != null && typeof parsed === "object" && !Array.isArray(parsed)) {
+          return parsed as Record<string, unknown>
+        }
+      } catch {
+        // fall through to {}
+      }
+    }
+    return {}
+  }
+
   export type Info = Awaited<ReturnType<typeof create>>
   export type Result = Awaited<ReturnType<Info["process"]>>
 
@@ -126,12 +144,13 @@ export namespace SessionProcessor {
                 case "tool-call": {
                   const match = toolcalls[value.toolCallId]
                   if (match) {
+                    const toolInput = normalizeToolInput(value.input)
                     const part = await Session.updatePart({
                       ...match,
                       tool: value.toolName,
                       state: {
                         status: "running",
-                        input: value.input,
+                        input: toolInput,
                         time: {
                           start: Date.now(),
                         },
@@ -150,7 +169,7 @@ export namespace SessionProcessor {
                           p.type === "tool" &&
                           p.tool === value.toolName &&
                           p.state.status !== "pending" &&
-                          JSON.stringify(p.state.input) === JSON.stringify(value.input),
+                          JSON.stringify(p.state.input) === JSON.stringify(toolInput),
                       )
                     ) {
                       const agent = await Agent.get(input.assistantMessage.agent)
@@ -176,7 +195,7 @@ export namespace SessionProcessor {
                       ...match,
                       state: {
                         status: "completed",
-                        input: value.input,
+                        input: normalizeToolInput(value.input),
                         output: value.output.output,
                         metadata: value.output.metadata,
                         title: value.output.title,
@@ -200,7 +219,7 @@ export namespace SessionProcessor {
                       ...match,
                       state: {
                         status: "error",
-                        input: value.input,
+                        input: normalizeToolInput(value.input),
                         error: (value.error as any).toString(),
                         time: {
                           start: match.state.time.start,

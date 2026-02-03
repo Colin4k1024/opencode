@@ -1,0 +1,17 @@
+{
+  "projectDir": "/Users/jiafan/Desktop/poc/opencode",
+  "model": null,
+  "agent": "build",
+  "autoStart": true,
+  "taskPollInterval": 5000,
+  "features": {
+    "tuiMode": true,
+    "taskScheduling": true,
+    "commandIntervention": true,
+    "autoRestart": true
+  },
+  "logging": {
+    "level": "info",
+    "file": ".opencode/automation.log"
+  }
+}

@@ -2,6 +2,7 @@ import { Bus } from "@/bus"
 import { BusEvent } from "@/bus/bus-event"
 import { Identifier } from "@/id/id"
 import { Instance } from "@/project/instance"
+import { hostedSessionIDs } from "@/session/hosted-ids"
 import { Log } from "@/util/log"
 import z from "zod"
 
@@ -99,6 +100,11 @@ export namespace Question {
     questions: Info[]
     tool?: { messageID: string; callID: string }
   }): Promise<Answer[]> {
+    if (hostedSessionIDs.has(input.sessionID)) {
+      return Promise.resolve(
+        input.questions.map((q) => (q.options?.length ? [q.options[0].label] : [])),
+      )
+    }
     const s = await state()
     const id = Identifier.ascending("question")
 

@@ -95,7 +95,9 @@ const targets = singleFlag
     })
   : allTargets
 
-await $`rm -rf dist`
+if (fs.existsSync(path.join(dir, "dist"))) {
+  fs.rmSync(path.join(dir, "dist"), { recursive: true, force: true })
+}
 
 const binaries: Record<string, string> = {}
 if (!skipInstall) {
