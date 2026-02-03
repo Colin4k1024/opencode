@@ -49,6 +49,7 @@ export namespace Skill {
   export const state = Instance.state(async () => {
     const skills: Record<string, Info> = {}
     const bundledSkillLocations = new Set<string>()
+    const dirs = new Set<string>()
 
     const addSkill = async (match: string, isBundled = false) => {
       const md = await ConfigMarkdown.parse(match).catch((err) => {
@@ -100,12 +101,15 @@ export namespace Skill {
         })
       }
 
+      dirs.add(path.dirname(match))
+
       skills[parsed.data.name] = {
         name: parsed.data.name,
         description: parsed.data.description,
         location: match,
         content: md.content,
       }
+      dirs.add(path.dirname(match))
       if (isBundled) {
         bundledSkillLocations.add(match)
       }
@@ -213,10 +217,9 @@ export namespace Skill {
       bundledCount: bundledSkillLocations.size,
       bundledLocations: Array.from(bundledSkillLocations).sort(),
     })
-    const dirs = Array.from(new Set(Object.values(skills).map((item) => path.dirname(item.location))))
     return {
       skills,
-      dirs,
+      dirs: Array.from(dirs),
     }
   })
 
