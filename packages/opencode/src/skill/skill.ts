@@ -10,6 +10,7 @@ import { Global } from "@/global"
 import { Filesystem } from "@/util/filesystem"
 import { Bus } from "@/bus"
 import { Session } from "@/session"
+import { Flag } from "@/flag/flag"
 
 export namespace Skill {
   const log = Log.create({ service: "skill" })
@@ -40,6 +41,8 @@ export namespace Skill {
   )
 
   const BUNDLED_SKILLS_GLOB = new Bun.Glob("**/SKILL.md")
+  const EXTERNAL_DIRS = [".claude", ".agents"]
+  const EXTERNAL_SKILL_GLOB = new Bun.Glob("skills/**/SKILL.md")
   const OPENCODE_SKILL_GLOB = new Bun.Glob("{skill,skills}/**/SKILL.md")
   const SKILL_GLOB = new Bun.Glob("**/SKILL.md")
 
@@ -107,6 +110,37 @@ export namespace Skill {
         bundledSkillLocations.add(match)
       }
       log.info("loaded skill", { name: parsed.data.name, location: match, bundled: isBundled })
+    }
+
+    const scanExternal = async (root: string, scope: "global" | "project") => {
+      return Array.fromAsync(
+        EXTERNAL_SKILL_GLOB.scan({
+          cwd: root,
+          absolute: true,
+          onlyFiles: true,
+          followSymlinks: true,
+          dot: true,
+        }),
+      )
+        .then((matches) => Promise.all(matches.map((m) => addSkill(m))))
+        .catch((error) => {
+          log.error(`failed to scan ${scope} skills`, { dir: root, error })
+        })
+    }
+
+    if (!Flag.OPENCODE_DISABLE_EXTERNAL_SKILLS) {
+      for (const dir of EXTERNAL_DIRS) {
+        const root = path.join(Global.Path.home, dir)
+        if (!(await Filesystem.isDir(root))) continue
+        await scanExternal(root, "global")
+      }
+      for await (const root of Filesystem.up({
+        targets: EXTERNAL_DIRS,
+        start: Instance.directory,
+        stop: Instance.worktree,
+      })) {
+        await scanExternal(root, "project")
+      }
     }
 
     // Scan bundled skills from global directory ~/.opencode/skills/
