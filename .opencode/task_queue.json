@@ -1,0 +1,42 @@
+[
+  {
+    "id": "task_demo_001",
+    "type": "opencode-command",
+    "description": "Run initial project analysis",
+    "payload": {
+      "command": "run",
+      "args": [
+        "Please analyze the current project structure and provide a summary of the main components."
+      ]
+    },
+    "status": "pending",
+    "createdAt": "2025-01-04T10:00:00Z",
+    "priority": "high"
+  },
+  {
+    "id": "task_demo_002",
+    "type": "file-operation",
+    "description": "Check configuration files",
+    "payload": {
+      "operation": "list",
+      "filePath": "."
+    },
+    "status": "pending",
+    "createdAt": "2025-01-04T10:05:00Z",
+    "priority": "medium"
+  },
+  {
+    "id": "task_demo_003",
+    "type": "opencode-command",
+    "description": "Generate documentation",
+    "payload": {
+      "command": "run",
+      "args": [
+        "Please generate documentation for the automation system we just created."
+      ]
+    },
+    "status": "pending",
+    "createdAt": "2025-01-04T10:10:00Z",
+    "priority": "low"
+  }
+]

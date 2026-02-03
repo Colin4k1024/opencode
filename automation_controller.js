@@ -14,7 +14,7 @@ class OpenCodeAutomationController extends EventEmitter {
   constructor(options = {}) {
     super();
     this.options = {
-      projectDir: options.projectDir || process.cwd(),
+      projectDir: options.projectDir || '/Users/jiafan/Desktop/poc/opencode',
       model: options.model || null,
       agent: options.agent || 'build',
       session: options.session || null,
@@ -41,7 +41,7 @@ class OpenCodeAutomationController extends EventEmitter {
       console.log(`Starting OpenCode TUI in directory: ${this.options.projectDir}`);
       
       // 构建启动命令
-      const args = ['--project', this.options.projectDir];
+      const args = [];
       
       if (this.options.model) {
         args.push('--model', this.options.model);
@@ -59,15 +59,19 @@ class OpenCodeAutomationController extends EventEmitter {
         args.push('--continue');
       }
 
-      // 启动 opencode tui 进程
-      this.opencodeProcess = spawn('bun', ['run', 'opencode', 'tui', ...args], {
+      // 构建完整的命令参数 - project作为第一个参数（位置参数）
+      const fullArgs = [this.options.projectDir, ...args];
+      
+      // 启动 opencode 进程（默认运行TUI）
+      this.opencodeProcess = spawn('bun', ['run', 'opencode', ...fullArgs], {
         cwd: '/Users/jiafan/Desktop/poc/opencode',
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env }
       });
 
       this.isRunning = true;
-      
+      this.startTime = Date.now();
+
       // 监听输出
       this.opencodeProcess.stdout.on('data', (data) => {
         const output = data.toString();
@@ -84,6 +88,7 @@ class OpenCodeAutomationController extends EventEmitter {
       this.opencodeProcess.on('close', (code) => {
         console.log(`OpenCode TUI process exited with code ${code}`);
         this.isRunning = false;
+        this.startTime = undefined;
         this.emit('tui-closed', code);
       });
 
@@ -186,6 +191,7 @@ class OpenCodeAutomationController extends EventEmitter {
       console.log('Stopping OpenCode TUI...');
       this.opencodeProcess.kill('SIGTERM');
       this.isRunning = false;
+      this.startTime = undefined;
     }
   }
 
