@@ -37,6 +37,7 @@ import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@/global"
 import path from "path"
 import { Plugin } from "@/plugin"
+import { Skill } from "../skill"
 
 export namespace Agent {
   export const Info = z
@@ -69,6 +70,7 @@ export namespace Agent {
   const state = Instance.state(async () => {
     const cfg = await Config.get()
 
+    const skillDirs = await Skill.dirs()
     const defaults = PermissionNext.fromConfig({
       "*": "allow",
       skill: "allow", // Explicitly allow all skills
@@ -76,6 +78,7 @@ export namespace Agent {
       external_directory: {
         "*": "ask",
         [Truncate.GLOB]: "allow",
+        ...Object.fromEntries(skillDirs.map((dir) => [path.join(dir, "*"), "allow"])),
       },
       question: "deny",
       plan_enter: "deny",

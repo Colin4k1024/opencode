@@ -179,15 +179,23 @@ export namespace Skill {
       bundledCount: bundledSkillLocations.size,
       bundledLocations: Array.from(bundledSkillLocations).sort(),
     })
-    return skills
+    const dirs = Array.from(new Set(Object.values(skills).map((item) => path.dirname(item.location))))
+    return {
+      skills,
+      dirs,
+    }
   })
 
   export async function get(name: string) {
-    return state().then((x) => x[name])
+    return state().then((x) => x.skills[name])
   }
 
   export async function all() {
-    return state().then((x) => Object.values(x))
+    return state().then((x) => Object.values(x.skills))
+  }
+
+  export async function dirs() {
+    return state().then((x) => x.dirs)
   }
 
   /**
@@ -201,7 +209,7 @@ export namespace Skill {
     return {
       globalDir: globalSkillsDir,
       exists,
-      loadedSkills: Object.keys(skills).sort(),
+      loadedSkills: skills.map((s) => s.name).sort(),
       skillCount: skills.length,
     }
   }
