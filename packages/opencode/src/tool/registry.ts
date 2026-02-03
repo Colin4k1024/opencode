@@ -115,7 +115,7 @@ export namespace ToolRegistry {
       OrchestrateTool,
       WebFetchTool,
       TodoWriteTool,
-      TodoReadTool,
+      // TodoReadTool,
       WebSearchTool,
       CodeSearchTool,
       SkillTool,
