@@ -1172,7 +1172,7 @@ export namespace Provider {
 
         // Merge configured headers into request headers
         opts.headers = {
-          ...(typeof opts.headers === "object" ? opts.headers : {}),
+          ...(opts.headers ?? {}),
           ...options["headers"],
         }
 
