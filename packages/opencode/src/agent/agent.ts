@@ -27,6 +27,7 @@ import PROMPT_SPECKIT_VIBE from "./prompt/speckit-vibe.txt"
 import PROMPT_DDD_VIBE from "./prompt/ddd-vibe.txt"
 import PROMPT_PARSER from "./prompt/parser.txt"
 import PROMPT_G6_SCENARIO_TESTS from "./prompt/g6-scenario-tests.txt"
+import PROMPT_G6_SCENARIO_TEST_RUNNER from "./prompt/g6-scenario-test-runner.txt"
 import PROMPT_PRODUCT_ASSET_EXTRACTOR from "./prompt/product-asset-extractor.txt"
 import { PermissionNext } from "@/permission/next"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
@@ -498,6 +499,38 @@ export namespace Agent {
           user,
         ),
         prompt: PROMPT_G6_SCENARIO_TESTS,
+        options: {},
+        mode: "primary",
+        native: true,
+      },
+      "g6-scenario-test-runner": {
+        name: "g6-scenario-test-runner",
+        description: `Execute scenario test document (scenario-tests.md), run checks against the codebase, and judge whether each scenario is satisfied. Output: .opencode/g6/<projectId>/scenario-test-results.json.`,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            read: "allow",
+            glob: "allow",
+            grep: "allow",
+            list: "allow",
+            bash: "allow",
+            question: "allow",
+            edit: {
+              "*": "deny",
+              ".opencode/g6/**": "allow",
+              "**/src/test/scenario/**": "allow",
+            },
+            write: {
+              "*": "deny",
+              ".opencode/g6/**": "allow",
+              "**/src/test/scenario/**": "allow",
+            },
+            external_directory: { [Truncate.DIR]: "allow", [Truncate.GLOB]: "allow" },
+          }),
+          user,
+        ),
+        prompt: PROMPT_G6_SCENARIO_TEST_RUNNER,
         options: {},
         mode: "primary",
         native: true,

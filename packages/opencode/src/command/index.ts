@@ -19,6 +19,7 @@ import PROMPT_SPECKIT_VIBE from "./template/speckit-vibe.txt"
 import PROMPT_DDD_VIBE from "./template/ddd-vibe.txt"
 import PROMPT_G6_IMPLEMENT from "./template/g6-implement.txt"
 import PROMPT_G6_SCENARIO_TESTS from "./template/g6-scenario-tests.txt"
+import PROMPT_G6_SCENARIO_TEST_RUN from "./template/g6-scenario-test-run.txt"
 import PROMPT_DDD_INIT from "./template/ddd-init.txt"
 import PROMPT_DDD_CONSTITUTION from "./template/ddd-constitution.txt"
 import PROMPT_DDD_INGEST from "./template/ddd-ingest.txt"
@@ -125,6 +126,7 @@ export namespace Command {
     DDD_VIBE: "ddd.vibe",
     G6_IMPLEMENT: "g6.implement",
     G6_SCENARIO_TESTS: "g6.scenario-tests",
+    G6_SCENARIO_TEST_RUN: "g6.scenario-test-run",
     PRODUCT_ASSET_EXTRACT: "product-asset.extract",
   } as const
 
@@ -474,6 +476,15 @@ export namespace Command {
           return PROMPT_G6_SCENARIO_TESTS
         },
         hints: hints(PROMPT_G6_SCENARIO_TESTS),
+      },
+      [Default.G6_SCENARIO_TEST_RUN]: {
+        name: Default.G6_SCENARIO_TEST_RUN,
+        description: "execute scenario test document and judge whether each scenario is satisfied",
+        agent: "g6-scenario-test-runner",
+        get template() {
+          return PROMPT_G6_SCENARIO_TEST_RUN
+        },
+        hints: hints(PROMPT_G6_SCENARIO_TEST_RUN),
       },
       [Default.PRODUCT_ASSET_EXTRACT]: {
         name: Default.PRODUCT_ASSET_EXTRACT,

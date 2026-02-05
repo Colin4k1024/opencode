@@ -1,0 +1,9 @@
+Execute the scenario test document and judge whether each scenario is satisfied.
+
+Input: $ARGUMENTS (path to scenario-tests.md, or projectId such that the document is at .opencode/g6/<projectId>/scenario-tests.md)
+
+## Instructions
+- Locate the scenario test document: if the user provided a path, use it; otherwise use .opencode/g6/<projectId>/scenario-tests.md for the given projectId.
+- Follow the g6-scenario-test-runner workflow: parse the document, associate with G6 node data, execute checks (e.g. Interface API tests), judge each scenario as pass/fail/skip with a reason.
+- Write the results to .opencode/g6/<projectId>/scenario-test-results.json and report the summary (total, pass, fail, skip) to the user.
+- Do not edit application source code; you may only write result files and optionally generated test code under src/test/scenario/.

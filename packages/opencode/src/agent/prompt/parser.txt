@@ -499,6 +499,18 @@ When you execute "Delegate to Plan Agent" (step 7) and the plan file is generate
      ```
    - After fix agent completes, continue with the appropriate remaining step (e.g. Phase 7 if error was after build, or verify and complete if error was after coding).
 
+10.2) **Optional — Delegate to Scenario Test Runner (when scenario-tests.md exists):**
+   - After Coding agent has completed, if the scenario test document exists at `.opencode/g6/<projectId>/scenario-tests.md` (e.g. user previously ran g6-scenario-tests or it was generated in this session), you may delegate to the scenario test runner to execute the document and judge whether each scenario is satisfied.
+   - Use `task` tool to call `g6-scenario-test-runner`:
+     ```
+     task({
+       description: "Execute scenario test document and judge whether each scenario is satisfied",
+       prompt: "Based on the scenario test document at .opencode/g6/<projectId>/scenario-tests.md and G6 node data under .opencode/g6/<projectId>/nodes/, execute scenario tests and judge whether each scenario is satisfied (pass/fail/skip). Write results to .opencode/g6/<projectId>/scenario-test-results.json and report the summary to the user. ProjectId: <projectId>.",
+       subagent_type: "g6-scenario-test-runner"
+     })
+     ```
+   - This step is optional: if scenario-tests.md does not exist, skip it and consider the implementation flow complete after Coding (and any Fix) steps.
+
 ## Incremental Loading Rules
 
 **CRITICAL**: To avoid prompt explosion, follow these rules:
