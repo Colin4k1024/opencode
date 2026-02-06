@@ -339,6 +339,7 @@ export namespace SessionPrompt {
           sessionID,
           mode: task.agent,
           agent: task.agent,
+          variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
             root: Instance.worktree,
@@ -542,6 +543,7 @@ export namespace SessionPrompt {
           role: "assistant",
           mode: agent.name,
           agent: agent.name,
+          variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
             root: Instance.worktree,
