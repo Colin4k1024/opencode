@@ -33,7 +33,7 @@ import { ulid } from "ulid"
 import { spawn } from "child_process"
 import { Command } from "../command"
 import { LearnCommandHandler } from "../command/learn"
-import { $, fileURLToPath } from "bun"
+import { $, fileURLToPath, pathToFileURL } from "bun"
 import { ConfigMarkdown } from "../config/markdown"
 import { SessionSummary } from "./summary"
 import { loadMemoryContext } from "./memory"
@@ -212,7 +212,7 @@ export namespace SessionPrompt {
         if (stats.isDirectory()) {
           parts.push({
             type: "file",
-            url: `file://${filepath}`,
+            url: pathToFileURL(filepath).href,
             filename: name,
             mime: "application/x-directory",
           })
@@ -221,7 +221,7 @@ export namespace SessionPrompt {
 
         parts.push({
           type: "file",
-          url: `file://${filepath}`,
+          url: pathToFileURL(filepath).href,
           filename: name,
           mime: "text/plain",
         })
