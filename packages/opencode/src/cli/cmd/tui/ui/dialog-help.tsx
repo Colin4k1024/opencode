@@ -4,7 +4,7 @@ import { useDialog } from "./dialog"
 import { useKeyboard } from "@opentui/solid"
 import { useKeybind } from "@tui/context/keybind"
 import { useSync } from "@tui/context/sync"
-import { For, createMemo } from "solid-js"
+import { For, createMemo, createSignal } from "solid-js"
 
 const SUBAGENT_DOC_ORDER = [
   "planner",
@@ -22,6 +22,7 @@ export function DialogHelp() {
   const { theme } = useTheme()
   const keybind = useKeybind()
   const sync = useSync()
+  const [hover, setHover] = createSignal(false)
 
   const subagentDocs = createMemo(() => {
     const byName = new Map(sync.data.agent.map((a) => [a.name, a]))
@@ -40,9 +41,16 @@ export function DialogHelp() {
         <text attributes={TextAttributes.BOLD} fg={theme.text}>
           Help
         </text>
-        <text fg={theme.textMuted} onMouseUp={() => dialog.clear()}>
-          esc/enter
-        </text>
+        <box
+          paddingLeft={1}
+          paddingRight={1}
+          backgroundColor={hover() ? theme.primary : undefined}
+          onMouseOver={() => setHover(true)}
+          onMouseOut={() => setHover(false)}
+          onMouseUp={() => dialog.clear()}
+        >
+          <text fg={hover() ? theme.selectedListItemText : theme.textMuted}>esc/enter</text>
+        </box>
       </box>
       <box paddingBottom={1}>
         <text fg={theme.textMuted}>
