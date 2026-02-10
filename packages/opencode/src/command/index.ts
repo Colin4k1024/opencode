@@ -41,6 +41,7 @@ import PROMPT_DDD_SERVICES from "./template/ddd-services.txt"
 import PROMPT_DDD_DESIGN from "./template/ddd-design.txt"
 import PROMPT_DDD_IMPLEMENT from "./template/ddd-implement.txt"
 import PROMPT_PRODUCT_ASSET_EXTRACT from "./template/product-asset-extract.txt"
+import PROMPT_DDD_G6 from "./template/ddd-g6.txt"
 import { MCP } from "../mcp"
 
 export namespace Command {
@@ -124,6 +125,7 @@ export namespace Command {
     DDD_DESIGN: "ddd.design",
     DDD_IMPLEMENT: "ddd.implement",
     DDD_VIBE: "ddd.vibe",
+    DDD_G6: "ddd.g6",
     G6_IMPLEMENT: "g6.implement",
     G6_SCENARIO_TESTS: "g6.scenario-tests",
     G6_SCENARIO_TEST_RUN: "g6.scenario-test-run",
@@ -458,6 +460,15 @@ export namespace Command {
           return PROMPT_DDD_VIBE
         },
         hints: hints(PROMPT_DDD_VIBE),
+      },
+      [Default.DDD_G6]: {
+        name: Default.DDD_G6,
+        description: "generate G6 JSON from DDD design artifacts (writes .opencode/g6/<projectId>/design.json)",
+        agent: "ddd-to-g6",
+        get template() {
+          return PROMPT_DDD_G6
+        },
+        hints: hints(PROMPT_DDD_G6),
       },
       [Default.G6_IMPLEMENT]: {
         name: Default.G6_IMPLEMENT,

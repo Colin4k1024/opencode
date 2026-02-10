@@ -5,7 +5,7 @@ Input: $ARGUMENTS
 ## Instructions
 - Use the product-asset-extractor agent workflow:
   - Detect file type (.docx or .md) from file path
-  - Load appropriate skill (word-parser for .docx, md-parser for .md)
+  - Load appropriate skill (docx for .docx, md-parser for .md)
   - Parse document to extract product asset information
   - Generate structured JSON output at product-assets.json in current directory
 

@@ -158,6 +158,12 @@ export namespace LLM {
             toolName: lower,
           }
         }
+        // Only repair to "invalid" when it is in the active tool set; otherwise clients
+        // that omit "invalid" (e.g. Cursor with a subset of tools) get "unavailable tool
+        // 'invalid'" instead of the real error (e.g. write validation or path error).
+        if (!Object.prototype.hasOwnProperty.call(tools, "invalid")) {
+          throw failed.error
+        }
         return {
           ...failed.toolCall,
           input: JSON.stringify({
@@ -171,7 +177,7 @@ export namespace LLM {
       topP: params.topP,
       topK: params.topK,
       providerOptions: ProviderTransform.providerOptions(input.model, params.options),
-      activeTools: Object.keys(tools).filter((x) => x !== "invalid"),
+      activeTools: Object.keys(tools),
       tools,
       maxOutputTokens,
       abortSignal: input.abort,

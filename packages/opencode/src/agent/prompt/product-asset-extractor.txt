@@ -35,7 +35,7 @@ Product assets include:
    - Verify file exists using `list` tool (DO NOT use `read` tool for .docx files - they are binary)
 
 3. **Select appropriate skill**:
-   - For `.docx` files: Use `word-parser` skill
+   - For `.docx` files: Use `docx` skill
    - For `.md` files: Use `md-parser` skill
 
 ### Phase 1.5: Document Deep Reading and Understanding
@@ -72,10 +72,10 @@ Product assets include:
 
 1. **Check available skills**:
    - Use `skill` tool to see available skills list
-   - Verify the required skill (word-parser or md-parser) is available
+   - Verify the required skill (docx or md-parser) is available
 
 2. **Load the skill**:
-   - Use `skill` tool: `skill("word-parser")` or `skill("md-parser")`
+   - Use `skill` tool: `skill("docx")` or `skill("md-parser")`
    - Review the skill's parsing methods and instructions
 
 3. **Parse the document**:
@@ -382,10 +382,10 @@ For each page processed in Phase 3, extract information following this template:
 
 You MUST use the following approach:
 
-1. **Load word-parser skill**:
-   - Use `skill("word-parser")` to get parsing instructions
+1. **Load docx skill**:
+   - Use `skill("docx")` to get parsing instructions (e.g. pandoc to markdown, or unpack for raw XML).
    
-2. **Convert .docx to text format using bash and mammoth**:
+2. **Convert .docx to text format** (e.g. using pandoc per docx skill: `pandoc document.docx -o output.md`, or using bash and mammoth if available):
    - **IMPORTANT**: You may not have access to `write` tool. Use `bash` tool to create the script file:
      ```bash
      cat > /tmp/convert-docx.js << 'EOF'

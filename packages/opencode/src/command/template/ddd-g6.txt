@@ -1,0 +1,35 @@
+Generate G6 JSON from DDD design artifacts.
+
+Input: $ARGUMENTS
+
+## Required input
+
+$ARGUMENTS must include **one of**:
+- The path to the **product-asset template docx** (e.g. 产品资产模版), or
+- The path to **product-assets.json**.
+
+If neither is provided, **do not proceed** with G6 conversion. Ask the user to provide the product-asset docx (or product-assets.json) and then run this command again with that path in the arguments.
+
+## Skills to use
+
+During conversion, **use the following skills** as needed:
+
+- **docx**: When the user provides a product-asset template **docx** path, you **must** use this skill to parse/read the docx. Do **not** use the read tool on .docx files (they are binary; "Cannot read binary file" will occur). The docx skill is in the user's skills directory (e.g. `~/.cursor/skills/docx/SKILL.md` or `skills/docx/SKILL.md`); read its SKILL.md and follow its "Reading Content" or conversion steps (pandoc, mammoth, or unpack), then write the converted markdown to `.opencode/g6/<projectId>/_product-asset-converted.md` and read that file to get the product-asset spec in context.
+- **ddd-to-g6-with-docx**: Use this skill for the full workflow (parse docx for G6/product-asset spec, resolve projectId, read DDD, map to G6 aligned with the spec). Follow its steps when a docx path is provided.
+- **g6-parser**: Use for the output schema and field conventions (combos, nodes, edges); refer to it when building the final design.json.
+
+Check available skills (e.g. via the skill tool) and use any other relevant skills from the project when they help (e.g. parsing documents, validating structure).
+
+**Order**: First load the product-asset requirements into context (read product-assets.json or convert docx and read the converted markdown from a path under the project, e.g. `.opencode/g6/<projectId>/_product-asset-converted.md`). Only then read DDD artifacts and map them to G6 according to the asset spec.
+
+**Hierarchical generation**: Generate G6 in layers to avoid context explosion. First generate and write **only combos** to `design-combos.json`; then **read** that file and generate **only nodes** (each node's comboId must be in the written combos) to `design-nodes.json`; then **read** design-nodes.json and generate **only edges** (source/target must be node ids from nodes) to `design-edges.json`; finally run the merge command to produce `design.json`. Do not build the full combos+nodes+edges in one step.
+
+## Instructions
+
+- Resolve projectId from `.opencode/ddd/context.json` or by listing `.opencode/ddd/designs/`.
+- **All DDD documents** under `.opencode/ddd/designs/<projectId>/` must be read in full and used: requirements.md, domains.md, contexts.md, mapping.md, strategic-design.md, entities.md, value-objects.md, aggregates.md, repositories.md, events.md, tactical-design.md, app-services.md, domain-services-detailed.md, boundaries.md, domain-services.md, ddd-design.md, and any files under `inputs/` (e.g. sources.md).
+- The generated G6 must include **detailed** DDD design data, not only high-level labels: for each combo, include context purpose and boundaries; for each node, include attributes, process steps, API operations, lifecycle, or invariants as appropriate to the node type; for edges, optionally include role or cardinality in `data`. See the ddd-to-g6 agent prompt for the exact detail-to-include rules. The design.json must use **data.properties** (not attributes) for business-object, general-object, request-object, and response-object nodes, with the full property schema (field, label, type, length, required, primaryKey, systemField, searchable, description, defaultValue, dict, type_name). For interface and mapper-interface nodes, include **endpoint**, **requestType**, **method**, and **parameters.requestRef** / **parameters.responseRef** in data.
+- If the user provided a path to product-assets.json (e.g. in $ARGUMENTS), read it and align G6 nodes/combos with the product-asset standard (pageAssets → interface nodes, layoutAssets → combos). If the user provided only a **docx** path, do **not** read the .docx with the read tool; use the **docx skill** (in the user's skills directory, e.g. `~/.cursor/skills/docx/SKILL.md` or `skills/docx/SKILL.md`) to parse/convert the docx to markdown, write to `.opencode/g6/<projectId>/_product-asset-converted.md`, then read that markdown to obtain the product-asset spec. Optionally use ddd-to-g6-with-docx or run product-asset.extract.
+- Output a single G6 JSON file at `.opencode/g6/<projectId>/design.json` with top-level keys: combos, nodes, edges. Use the g6-parser skill schema (see skills/g6-parser/SKILL.md). For large designs, write `design-combos.json`, `design-nodes.json`, and `design-edges.json` separately, then merge into `design.json` via bash (see ddd-to-g6 prompt step 7) to avoid tool-call truncation.
+- Ensure every node has a comboId that exists in combos; every edge source/target exists in nodes. Use stable ids (e.g. slugs from names).
+- Generated output must align with the reference design design/g6/merged-output-23-01.json in **id naming and structure**: interface ids use the **frontend-interface-** prefix and slugs such as handover-config-list, my-task-submit; combos use **service-layer-lzxt**, **object-area-lzxt**, **page-layer-lzxt** for handover scenarios; **every** requestRef and responseRef on interface and mapper-interface nodes must have a corresponding request-object or response-object node in nodes—no dangling references allowed.

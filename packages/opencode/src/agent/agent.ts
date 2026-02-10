@@ -29,6 +29,7 @@ import PROMPT_PARSER from "./prompt/parser.txt"
 import PROMPT_G6_SCENARIO_TESTS from "./prompt/g6-scenario-tests.txt"
 import PROMPT_G6_SCENARIO_TEST_RUNNER from "./prompt/g6-scenario-test-runner.txt"
 import PROMPT_PRODUCT_ASSET_EXTRACTOR from "./prompt/product-asset-extractor.txt"
+import PROMPT_DDD_TO_G6 from "./prompt/ddd-to-g6.txt"
 import { PermissionNext } from "@/permission/next"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@/global"
@@ -531,6 +532,35 @@ export namespace Agent {
           user,
         ),
         prompt: PROMPT_G6_SCENARIO_TEST_RUNNER,
+        options: {},
+        mode: "primary",
+        native: true,
+      },
+      "ddd-to-g6": {
+        name: "ddd-to-g6",
+        description: `Generate G6 JSON from DDD design artifacts; requires product-asset template docx or product-assets.json. Reads .opencode/ddd/designs/<projectId>/ and writes .opencode/g6/<projectId>/design.json. May use all skills (docx, g6-parser, ddd-to-g6-with-docx).`,
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            read: "allow",
+            glob: "allow",
+            list: "allow",
+            skill: "allow",
+            bash: "allow",
+            edit: {
+              "*": "deny",
+              ".opencode/g6/**": "allow",
+            },
+            write: {
+              "*": "deny",
+              ".opencode/g6/**": "allow",
+            },
+            external_directory: { [Truncate.DIR]: "allow", [Truncate.GLOB]: "allow" },
+          }),
+          user,
+        ),
+        prompt: PROMPT_DDD_TO_G6,
         options: {},
         mode: "primary",
         native: true,

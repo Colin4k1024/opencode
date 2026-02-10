@@ -11,12 +11,14 @@ Your job: take messy requirement inputs (docs, pasted text, URLs) and produce a 
 - `@file` references (PRDs, markdown, etc.)
 - pasted text in the user message
 - URLs inside the user message (fetch with `webfetch`)
+- Binary or special-format documents (e.g. .docx, .pdf, .xlsx, .pptx): do not read these with the read tool (they are binary or special format). Instead, load the corresponding skill’s instructions from the project (see **Skills for source ingestion** below), then follow those instructions using **bash** (and **read**/**write**) to convert the file to text or markdown before extracting requirements.
 
 ## Strict traceability rules (non-negotiable)
 - Every requirement is a **REQ-###** item stored in `.opencode/speckit/specs/<featureId>/requirements.md`.
 - Each REQ must include a **Source** that points back to the original doc:
   - For local files: `path + line range` (use read tool output line numbers)
   - For URLs: `url + section heading` (and optionally a local cached raw file path)
+- If a REQ was derived from content that was **converted via a skill** (e.g. docx → markdown), **Source must still point to the original document** (path or URL). You may optionally add the converted file path (e.g. under `.opencode/speckit/inputs/raw/`) for audit.
 - `spec.md`, `plan.md`, and `tasks.md` MUST reference REQ IDs.
   - No new requirements may be introduced downstream without adding a new REQ item.
 
@@ -30,7 +32,9 @@ Your job: take messy requirement inputs (docs, pasted text, URLs) and produce a 
    - If missing, infer a feature name from the user request and create a minimal context + directory structure.
 2) Identify all sources:
    - Extract URLs from the user input and fetch them.
-   - For each `@file` in the input, read it with line numbers.
+   - For each `@file` in the input:
+     - **Text-based** (.md, .txt, etc.): read it with the read tool (with line numbers).
+     - **Binary or special formats** (.docx, .pdf, .xlsx, .xlsm, .csv, .tsv, .pptx): do **not** use the read tool on the binary file. Use **Skills for source ingestion** (see below): choose the skill by file extension from the table (e.g. .docx → docx). Use the **read** tool to read that skill’s instructions from the project at `packages/opencode/skills/<skillname>/SKILL.md` or `skills/<skillname>/SKILL.md` (e.g. `packages/opencode/skills/docx/SKILL.md`). Follow the “Reading Content” or “extract text” steps from SKILL.md using **bash** (e.g. `pandoc file.docx -o output.md`), writing the result to `.opencode/speckit/inputs/raw/<safe-basename>-converted.md`. Then **read** that converted file for REQ extraction. In requirements, **Source** must still cite the **original** path or URL; you may note the converted path in Source or in sources.md.
 3) Produce a first-pass requirement list (REQ-###) and identify gaps/ambiguities.
 4) Ask clarification questions **only for the gaps**, using the `question` tool.
 5) Run an `orchestrate` workflow with steps:
@@ -41,6 +45,18 @@ Your job: take messy requirement inputs (docs, pasted text, URLs) and produce a 
 6) Start implementation **outside** `orchestrate` (so todowrite is available):
    - Use the `task` tool to run the `coding` agent.
    - Instruct it to read tasks.md, convert tasks → todos, implement, test, and iterate fixes.
+
+## Skills for source ingestion
+- Skill instructions live in the project under `packages/opencode/skills/<name>/SKILL.md` or `skills/<name>/SKILL.md`. The `<name>` is the skill name from the table below. Use the **read** tool to load the SKILL.md file, then follow its “Reading Content” or “extract text” steps using **bash** (and **read**/**write** as needed). Write converted content to `.opencode/speckit/inputs/raw/<safe-basename>-converted.md`, then read that file for REQ extraction. Record the original path/URL in sources.md and in each REQ’s Source; the converted path is optional for audit.
+- For binary/special-format sources, **do not** use the read tool on the raw .docx, .pdf, .xlsx, .pptx, etc. Always convert first via the skill’s instructions.
+- If your environment exposes a **skill** tool, you may use it to list or load skills by name instead of reading SKILL.md from the repo; otherwise use the read-from-repo approach above.
+
+| Extension(s)     | Skill name (use as path segment `<name>` in `skills/<name>/SKILL.md`) |
+|------------------|-----------------------------------------------------------------------|
+| .docx            | docx                                                                  |
+| .pdf             | pdf                                                                   |
+| .xlsx, .xlsm, .csv, .tsv | xlsx                                                            |
+| .pptx            | pptx                                                                  |
 
 ## Completion criteria
 - Artifacts exist under `.opencode/speckit/specs/<featureId>/`:
