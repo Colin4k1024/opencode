@@ -488,27 +488,24 @@ export namespace Provider {
         ...(providerConfig?.options?.aiGatewayHeaders || {}),
       }
 
+      const featureFlags = {
+        duo_agent_platform_agentic_chat: true,
+        duo_agent_platform: true,
+        ...(providerConfig?.options?.featureFlags || {}),
+      }
       return {
         autoload: !!apiKey,
         options: {
           instanceUrl,
           apiKey,
-          aiGatewayHeaders,
-          featureFlags: {
-            duo_agent_platform_agentic_chat: true,
-            duo_agent_platform: true,
-            ...(providerConfig?.options?.featureFlags || {}),
-          },
-        },
+          ...(aiGatewayHeaders && { aiGatewayHeaders }),
+          featureFlags,
+        } as Parameters<typeof createGitLab>[0],
         async getModel(sdk: ReturnType<typeof createGitLab>, modelID: string) {
           return sdk.agenticChat(modelID, {
-            aiGatewayHeaders,
-            featureFlags: {
-              duo_agent_platform_agentic_chat: true,
-              duo_agent_platform: true,
-              ...(providerConfig?.options?.featureFlags || {}),
-            },
-          })
+            ...(aiGatewayHeaders && { aiGatewayHeaders }),
+            featureFlags,
+          } as Parameters<ReturnType<typeof createGitLab>["agenticChat"]>[1])
         },
       }
     },

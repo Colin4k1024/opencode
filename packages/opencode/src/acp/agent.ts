@@ -25,8 +25,16 @@ import {
   type SetSessionModeResponse,
   type ToolCallContent,
   type ToolKind,
-  type Usage,
 } from "@agentclientprotocol/sdk"
+
+type Usage = {
+  totalTokens: number
+  inputTokens: number
+  outputTokens: number
+  thoughtTokens?: number
+  cachedReadTokens?: number
+  cachedWriteTokens?: number
+}
 
 import { Log } from "../util/log"
 import { pathToFileURL } from "bun"
@@ -112,7 +120,7 @@ export namespace ACP {
           used,
           size,
           cost: { amount: totalCost, currency: "USD" },
-        },
+        } as unknown as Parameters<AgentSideConnection["sessionUpdate"]>[0]["update"],
       })
       .catch((error) => {
         log.error("failed to send usage update", { error })
