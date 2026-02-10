@@ -31,6 +31,7 @@ export function createDialogProviderOptions() {
     return pipe(
       sync.data.provider_next.all,
       sortBy((x) => PROVIDER_PRIORITY[x.id] ?? 99),
+<<<<<<< HEAD
       map((provider) => ({
         title: provider.name,
         value: provider.id,

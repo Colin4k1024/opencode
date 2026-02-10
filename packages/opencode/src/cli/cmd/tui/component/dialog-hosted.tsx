@@ -83,7 +83,12 @@ export function DialogHosted() {
     }
     const agent = local.agent.current()
     try {
-      const res = await sdk.client.session.hosted.run(
+      const hostedRun = (sdk.client as any).session?.hosted?.run
+      if (!hostedRun) {
+        toast.show({ variant: "error", message: "Hosted run not available" })
+        return
+      }
+      const res = await hostedRun(
         {
           command: option.value,
           arguments: "",

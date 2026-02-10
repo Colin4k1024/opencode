@@ -243,7 +243,7 @@ export namespace LLM {
       maxRetries: input.retries ?? 0,
       messages: [
         ...system.map(
-          (x): ModelMessage => ({
+          (x: string): ModelMessage => ({
             role: "system",
             content: x,
           }),

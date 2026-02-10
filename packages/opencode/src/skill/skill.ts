@@ -329,6 +329,7 @@ export namespace Skill {
       name: input.name,
       description: input.description,
       location: filePath,
+      content: input.content.trim(),
     }
     await Instance.dispose()
     return info
