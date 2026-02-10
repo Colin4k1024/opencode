@@ -716,6 +716,9 @@ export function Autocomplete(props: {
                 setStore("input", "mouse")
                 moveTo(index)
               }}
+
+
+
               onMouseUp={() => select()}
             >
               <text fg={index === store.selected ? selectedForeground(theme) : theme.text} flexShrink={0}>
