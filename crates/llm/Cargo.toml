@@ -11,3 +11,14 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 reqwest = { workspace = true }
+
+# Oris runtime for multi-provider LLM support
+oris-runtime = { version = "0.61", default-features = false, features = ["gemini", "bedrock", "mistralai", "ollama"] }
+
+# Streaming
+futures = "0.3"
+async-trait = "0.1"
+getrandom = "0.3"
+
+# Protocol (internal)
+opencode-protocol = { workspace = true }

@@ -1,10 +1,20 @@
-//! LLM provider abstraction and streaming
+//! LLM provider abstraction and streaming layer
 //!
-//! Phase 3: Multi-provider SSE streaming, tool call parsing, cache policy
+//! Built on top of `oris-runtime` for multi-provider support:
+//! - Anthropic Claude
+//! - OpenAI (GPT-4, o-series)
+//! - Google Gemini
+//! - Amazon Bedrock
+//! - DeepSeek
+//! - xAI (OpenAI-compatible)
+//! - Azure OpenAI (OpenAI-compatible)
+//! - Ollama (local)
 
 pub mod provider;
 pub mod stream;
-pub mod cache;
-pub mod tool_call;
+pub mod bridge;
+pub mod error;
 
-// TODO: Phase 3 implementation
+pub use error::LlmError;
+pub use provider::{ProviderConfig, ProviderKind, create_provider};
+pub use stream::StreamController;
