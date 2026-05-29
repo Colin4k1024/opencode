@@ -1,0 +1,172 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    
+    <!-- Title -->
+    <mxCell id="title" value="OpenCode - Technical Architecture" style="text;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+      <mxGeometry x="250" y="10" width="500" height="30" as="geometry"/>
+    </mxCell>
+
+    <!-- Layer: Client/UI -->
+    <mxCell id="layer-ui" value="Client Layer" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="20" y="50" width="960" height="120" as="geometry"/>
+    </mxCell>
+    <mxCell id="cli" value="CLI&#xa;(packages/opencode/src/cli)" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="40" y="80" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="tui" value="TUI App&#xa;(packages/app)" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="200" y="80" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="desktop" value="Desktop&#xa;(packages/desktop)" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="360" y="80" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="web" value="Web/Docs&#xa;(packages/web)" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="520" y="80" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="vscode" value="VS Code Extension&#xa;(sdks/vscode)" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="680" y="80" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="ui-lib" value="UI Library&#xa;(packages/ui)" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="840" y="80" width="120" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- Layer: Core Engine -->
+    <mxCell id="layer-core" value="Core Engine Layer" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="20" y="190" width="960" height="160" as="geometry"/>
+    </mxCell>
+    <mxCell id="session" value="Session Manager&#xa;(session/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="40" y="220" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="agent" value="Agent&#xa;(agent/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="200" y="220" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="command" value="Command&#xa;(command/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="340" y="220" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="permission" value="Permission&#xa;(permission/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="480" y="220" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="config" value="Config&#xa;(config/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="620" y="220" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="bus" value="Event Bus&#xa;(bus/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="760" y="220" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="tools" value="Tools Registry&#xa;(tool/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="40" y="285" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="mcp" value="MCP&#xa;(mcp/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="200" y="285" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="lsp" value="LSP&#xa;(lsp/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="340" y="285" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="pty" value="PTY&#xa;(pty/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="480" y="285" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="git" value="Git&#xa;(git/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="620" y="285" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="file" value="File/Project&#xa;(file/ project/)" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="760" y="285" width="120" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- Layer: LLM -->
+    <mxCell id="layer-llm" value="LLM Layer (packages/llm)" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="20" y="370" width="960" height="100" as="geometry"/>
+    </mxCell>
+    <mxCell id="llm-core" value="LLM Core&#xa;(llm.ts)" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="40" y="400" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="providers" value="Providers&#xa;Anthropic / OpenAI / Google&#xa;Azure / Bedrock / xAI / ..." style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="180" y="400" width="220" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="tool-runtime" value="Tool Runtime&#xa;(tool-runtime.ts)" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="420" y="400" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="schema" value="Schema&#xa;(schema/)" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="580" y="400" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="cache" value="Cache Policy&#xa;(cache-policy.ts)" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="720" y="400" width="130" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- Layer: Infrastructure -->
+    <mxCell id="layer-infra" value="Infrastructure Layer" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="20" y="490" width="960" height="100" as="geometry"/>
+    </mxCell>
+    <mxCell id="storage" value="Storage/SQLite&#xa;(storage/ effect-drizzle-sqlite)" style="rounded=1;fillColor=#fff;strokeColor=#d79b00;" vertex="1" parent="1">
+      <mxGeometry x="40" y="520" width="180" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="server" value="HTTP Server&#xa;(server/)" style="rounded=1;fillColor=#fff;strokeColor=#d79b00;" vertex="1" parent="1">
+      <mxGeometry x="240" y="520" width="130" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="auth" value="Auth/Identity&#xa;(auth/ packages/identity)" style="rounded=1;fillColor=#fff;strokeColor=#d79b00;" vertex="1" parent="1">
+      <mxGeometry x="390" y="520" width="160" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="sync" value="Sync/Share&#xa;(sync/ share/)" style="rounded=1;fillColor=#fff;strokeColor=#d79b00;" vertex="1" parent="1">
+      <mxGeometry x="570" y="520" width="130" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="plugin-sys" value="Plugin System&#xa;(plugin/ skill/)" style="rounded=1;fillColor=#fff;strokeColor=#d79b00;" vertex="1" parent="1">
+      <mxGeometry x="720" y="520" width="130" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="infra-sst" value="SST/AWS&#xa;(infra/ sst.config.ts)" style="rounded=1;fillColor=#fff;strokeColor=#d79b00;" vertex="1" parent="1">
+      <mxGeometry x="870" y="520" width="100" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- Layer: Shared -->
+    <mxCell id="layer-shared" value="Shared / Cross-cutting" style="rounded=1;fillColor=#f0f0f0;strokeColor=#999;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="20" y="610" width="960" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="core-pkg" value="@opencode-ai/core&#xa;(models, events, flags)" style="rounded=1;fillColor=#fff;strokeColor=#999;" vertex="1" parent="1">
+      <mxGeometry x="40" y="635" width="180" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="effect" value="Effect TS&#xa;(Runtime, Layers, DI)" style="rounded=1;fillColor=#fff;strokeColor=#999;" vertex="1" parent="1">
+      <mxGeometry x="240" y="635" width="150" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="sdk-pkg" value="SDK (JS)&#xa;(packages/sdk)" style="rounded=1;fillColor=#fff;strokeColor=#999;" vertex="1" parent="1">
+      <mxGeometry x="410" y="635" width="120" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="enterprise" value="Enterprise&#xa;(packages/enterprise)" style="rounded=1;fillColor=#fff;strokeColor=#999;" vertex="1" parent="1">
+      <mxGeometry x="550" y="635" width="140" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="containers" value="Containers&#xa;(packages/containers)" style="rounded=1;fillColor=#fff;strokeColor=#999;" vertex="1" parent="1">
+      <mxGeometry x="710" y="635" width="130" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="http-rec" value="HTTP Recorder" style="rounded=1;fillColor=#fff;strokeColor=#999;" vertex="1" parent="1">
+      <mxGeometry x="860" y="635" width="110" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- Key Edges -->
+    <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;curved=1;endArrow=classic;exitX=0.5;exitY=1;entryX=0.3;entryY=0;" edge="1" parent="1" source="cli" target="session">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;curved=1;endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="tui" target="agent">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;curved=1;endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="session" target="llm-core">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;curved=1;endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="llm-core" target="providers">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;curved=1;endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="tools" target="tool-runtime">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;curved=1;endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="agent" target="session">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;curved=1;endArrow=classic;exitX=0.5;exitY=1;entryX=0.2;entryY=0;" edge="1" parent="1" source="desktop" target="server">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;curved=1;endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="mcp" target="tool-runtime">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Tech Stack Note -->
+    <mxCell id="note" value="Tech Stack: TypeScript · Bun · Effect TS · SolidJS · Drizzle ORM · SQLite · SST (AWS) · Hono · Turborepo" style="text;fontSize=11;align=center;fontStyle=2;fillColor=#f0f0f0;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="150" y="695" width="700" height="25" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>

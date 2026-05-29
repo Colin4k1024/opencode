@@ -1,0 +1,26 @@
+[package]
+name = "opencode-runtime"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "opencode-sidecar"
+path = "src/main.rs"
+
+[dependencies]
+opencode-protocol = { workspace = true }
+opencode-pty = { workspace = true }
+opencode-tools = { workspace = true }
+opencode-llm = { workspace = true }
+opencode-session = { workspace = true }
+opencode-agent = { workspace = true }
+opencode-mcp = { workspace = true }
+opencode-plugin = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
