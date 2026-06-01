@@ -164,6 +164,76 @@ const targets = singleFlag
     })
   : allTargets
 
+// ── Rust sidecar cross-compile table ─────────────────────────────────────────
+//
+// Maps each bun target descriptor to the Rust target triplet used by cargo/cross.
+// Baseline variants share the same Rust binary as their non-baseline counterpart
+// (Rust has no AVX2 split — the binary is identical).
+//
+// `cross` = true means the target cannot be compiled natively on the build host
+// and requires `cross` (or a pre-installed toolchain with the right linker).
+
+const rustTargets: {
+  os: string
+  arch: "arm64" | "x64"
+  abi?: "musl"
+  rustTriple: string
+  cross?: boolean
+}[] = [
+  { os: "linux",  arch: "arm64", rustTriple: "aarch64-unknown-linux-gnu",  cross: true },
+  { os: "linux",  arch: "x64",   rustTriple: "x86_64-unknown-linux-gnu"                },
+  { os: "linux",  arch: "arm64", abi: "musl", rustTriple: "aarch64-unknown-linux-musl", cross: true },
+  { os: "linux",  arch: "x64",   abi: "musl", rustTriple: "x86_64-unknown-linux-musl"               },
+  { os: "darwin", arch: "arm64", rustTriple: "aarch64-apple-darwin"                    },
+  { os: "darwin", arch: "x64",   rustTriple: "x86_64-apple-darwin"                     },
+  { os: "win32",  arch: "x64",   rustTriple: "x86_64-pc-windows-msvc"                  },
+  { os: "win32",  arch: "arm64", rustTriple: "aarch64-pc-windows-msvc", cross: true     },
+]
+
+/**
+ * Returns the Rust target triplet for a given bun target, or null if the target
+ * doesn't require a distinct cross-compile (e.g. baseline variants reuse the
+ * same binary as the non-baseline build for the same os/arch/abi).
+ */
+function getRustTarget(item: (typeof allTargets)[number]) {
+  return rustTargets.find(
+    (r) => r.os === item.os && r.arch === item.arch && r.abi === item.abi,
+  ) ?? null
+}
+
+const cargoManifest = path.resolve(dir, "..", "..", "crates", "Cargo.toml")
+const cratesDir     = path.resolve(dir, "..", "..", "crates")
+
+/**
+ * Build the Rust sidecar for a specific target and return the path to the compiled binary.
+ * For single-platform builds the native toolchain is used (no --target flag).
+ */
+async function buildRustSidecar(
+  rustTarget: (typeof rustTargets)[number] | null,
+  isNative: boolean,
+): Promise<string> {
+  const binaryName = rustTarget?.os === "win32" ? "opencode-sidecar.exe" : "opencode-sidecar"
+
+  if (isNative || rustTarget === null) {
+    // Native build — no cross-compilation needed
+    await $`cargo build --manifest-path ${cargoManifest} --release -p opencode-runtime`
+    return path.join(cratesDir, "target", "release", binaryName)
+  }
+
+  const triple = rustTarget.rustTriple
+
+  if (rustTarget.cross) {
+    // cross is required for this target
+    await $`cross build --manifest-path ${cargoManifest} --release -p opencode-runtime --target ${triple}`.cwd(cratesDir)
+  } else {
+    await $`cargo build --manifest-path ${cargoManifest} --release -p opencode-runtime --target ${triple}`.cwd(cratesDir)
+  }
+
+  return path.join(cratesDir, "target", triple, "release", binaryName)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 await $`rm -rf dist`
 
 const binaries: Record<string, string> = {}
@@ -171,6 +241,11 @@ if (!skipInstall) {
   await $`bun install --os="*" --cpu="*" @opentui/core@${pkg.dependencies["@opentui/core"]}`
   await $`bun install --os="*" --cpu="*" @parcel/watcher@${pkg.dependencies["@parcel/watcher"]}`
 }
+
+// Track which Rust targets have already been compiled so we don't rebuild
+// for baseline variants that share the same binary.
+const builtRustBinaries = new Map<string, string>()
+
 for (const item of targets) {
   const name = [
     pkg.name,
@@ -225,6 +300,30 @@ for (const item of targets) {
       OPENCODE_LIBC: item.os === "linux" ? `'${item.abi ?? "glibc"}'` : "",
     },
   })
+
+  // ── Build & bundle Rust sidecar ────────────────────────────────────────────
+  const rustTarget = getRustTarget(item)
+  const isNative = singleFlag  // --single always means current platform
+
+  // Cache key: baseline variants share the exact same Rust binary as the
+  // non-baseline build, so we skip recompilation if already done for this triple.
+  const cacheKey = rustTarget ? rustTarget.rustTriple : "native"
+  let sidecarSrc = builtRustBinaries.get(cacheKey)
+
+  if (!sidecarSrc) {
+    console.log(`building rust sidecar for ${cacheKey}`)
+    try {
+      sidecarSrc = await buildRustSidecar(rustTarget, isNative)
+      builtRustBinaries.set(cacheKey, sidecarSrc)
+    } catch (e) {
+      console.error(`Failed to build Rust sidecar for ${name}:`, e)
+      process.exit(1)
+    }
+  }
+
+  const sidecarDest = path.join("dist", name, "bin", path.basename(sidecarSrc))
+  await $`cp ${sidecarSrc} ${sidecarDest}`
+  console.log(`bundled sidecar → dist/${name}/bin/${path.basename(sidecarSrc)}`)
 
   // Smoke test: only run if binary is for current platform
   if (item.os === process.platform && item.arch === process.arch && !item.abi) {

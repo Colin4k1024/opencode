@@ -39,21 +39,35 @@ export interface SidecarState {
 }
 
 /**
- * Determine the sidecar binary path based on platform and architecture
+ * Determine the sidecar binary path based on platform and architecture.
+ *
+ * Search order:
+ *  1. Next to the running executable (production: opencode-sidecar lives beside opencode)
+ *  2. Rust release build output (local dev after `cargo build --release`)
+ *  3. Rust debug build output  (local dev after `cargo build`)
+ *  4. Current working directory
+ *  5. Fall through to PATH lookup
  */
 function getSidecarBinaryPath(): string {
   const platform = process.platform
-  const arch = process.arch
 
   const binaryName = platform === "win32" ? "opencode-sidecar.exe" : "opencode-sidecar"
 
-  // Look in several locations:
-  // 1. Next to the current executable
-  // 2. In the crates/target/release directory (dev)
-  // 3. In a platform-specific subdirectory
+  // process.execPath points to the compiled opencode binary when running as a
+  // packaged executable, and to the bun/node runtime otherwise.
+  const execDir = path.dirname(process.execPath)
+
+  // Repository root is 4 levels above src/sidecar/ (src/sidecar → src → packages/opencode → packages → repo)
+  const repoRoot = path.resolve(__dirname, "..", "..", "..", "..")
+
   const candidates = [
-    path.join(__dirname, "..", "..", "..", "crates", "target", "release", binaryName),
-    path.join(__dirname, "..", binaryName),
+    // 1. Sibling of the compiled opencode binary (production layout)
+    path.join(execDir, binaryName),
+    // 2. Release build (dev)
+    path.join(repoRoot, "crates", "target", "release", binaryName),
+    // 3. Debug build (dev)
+    path.join(repoRoot, "crates", "target", "debug", binaryName),
+    // 4. CWD
     path.join(process.cwd(), binaryName),
   ]
 
@@ -63,7 +77,7 @@ function getSidecarBinaryPath(): string {
     }
   }
 
-  // Fallback: assume it's in PATH
+  // Fallback: rely on PATH
   return binaryName
 }
 

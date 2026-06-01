@@ -11,7 +11,7 @@ pub struct Request {
     pub params: serde_json::Value,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Response {
     pub jsonrpc: String,
     pub id: i64,
@@ -21,7 +21,7 @@ pub struct Response {
     pub error: Option<RpcError>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RpcError {
     pub code: i32,
     pub message: String,
@@ -30,7 +30,7 @@ pub struct RpcError {
 }
 
 /// Notification (server → client, no id)
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Notification {
     pub jsonrpc: String,
     pub method: String,
