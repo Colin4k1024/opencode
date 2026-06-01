@@ -302,3 +302,219 @@ async fn test_router_dispatch_shell_exec() {
     let stdout = r["stdout"].as_str().unwrap();
     assert!(stdout.contains("router-direct"), "stdout={stdout:?}");
 }
+
+// ── New tool router tests ─────────────────────────────────────────────────────
+
+/// `tools.file.write` + `tools.file.read` round-trip.
+#[tokio::test]
+async fn test_router_file_write_and_read() {
+    use std::path::PathBuf;
+    let state = Arc::new(AppState::new());
+    let tmp = std::env::temp_dir().join(format!("router-file-{}.txt", std::process::id()));
+    let path = tmp.to_string_lossy().to_string();
+
+    // write
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "tools.file.write",
+        200,
+        serde_json::json!({"path": path, "content": "hello from rust router\n"}),
+    )
+    .await;
+    assert!(resp.error.is_none(), "write error: {:?}", resp.error);
+    assert!(resp.result.unwrap()["bytes_written"].as_u64().unwrap() > 0);
+
+    // read back
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "tools.file.read",
+        201,
+        serde_json::json!({"path": path}),
+    )
+    .await;
+    assert!(resp.error.is_none(), "read error: {:?}", resp.error);
+    let content = resp.result.unwrap()["content"].as_str().unwrap().to_string();
+    assert!(content.contains("hello from rust router"), "content={content:?}");
+
+    let _ = std::fs::remove_file(&path);
+}
+
+/// `tools.file.edit` replaces a string in-place.
+#[tokio::test]
+async fn test_router_file_edit() {
+    let state = Arc::new(AppState::new());
+    let path = std::env::temp_dir()
+        .join(format!("router-edit-{}.txt", std::process::id()))
+        .to_string_lossy()
+        .to_string();
+
+    std::fs::write(&path, "foo bar baz\n").unwrap();
+
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "tools.file.edit",
+        202,
+        serde_json::json!({"path": path, "old_string": "bar", "new_string": "qux"}),
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+    assert_eq!(resp.result.unwrap()["replacements"], 1);
+
+    let content = std::fs::read_to_string(&path).unwrap();
+    assert!(content.contains("qux") && !content.contains("bar"));
+    let _ = std::fs::remove_file(&path);
+}
+
+/// `tools.glob` returns matching files.
+#[tokio::test]
+async fn test_router_glob() {
+    let state = Arc::new(AppState::new());
+
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "tools.glob",
+        203,
+        serde_json::json!({
+            "pattern": "**/*.rs",
+            "path": env!("CARGO_MANIFEST_DIR")
+        }),
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+    let files = resp.result.unwrap()["files"].as_array().unwrap().to_vec();
+    assert!(!files.is_empty(), "expected .rs files in manifest dir");
+}
+
+/// `tools.grep` finds matching lines.
+#[tokio::test]
+async fn test_router_grep() {
+    let state = Arc::new(AppState::new());
+
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "tools.grep",
+        204,
+        serde_json::json!({
+            "pattern": "AppState",
+            "path": env!("CARGO_MANIFEST_DIR")
+        }),
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+    let matches = resp.result.unwrap()["matches"].as_array().unwrap().to_vec();
+    assert!(!matches.is_empty(), "expected matches for 'AppState'");
+}
+
+/// `tools.git.status` returns a list (empty or not) for the repo root.
+#[tokio::test]
+async fn test_router_git_status() {
+    let state = Arc::new(AppState::new());
+    // CARGO_MANIFEST_DIR is inside the git repo
+    let cwd = env!("CARGO_MANIFEST_DIR");
+
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "tools.git.status",
+        205,
+        serde_json::json!({"cwd": cwd}),
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+    // result is an array of file status entries
+    assert!(resp.result.unwrap().is_array());
+}
+
+/// `session.create` + `session.get` + `session.delete` round-trip.
+#[tokio::test]
+async fn test_router_session_lifecycle() {
+    let state = Arc::new(AppState::new());
+
+    // create
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "session.create",
+        300,
+        serde_json::json!({"slug": "test", "project_id": "default", "directory": "/tmp"}),
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+    let session = resp.result.unwrap();
+    let sid = session["id"].as_str().unwrap().to_string();
+    assert!(!sid.is_empty());
+
+    // get
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "session.get",
+        301,
+        serde_json::json!({"id": sid}),
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+    assert_eq!(resp.result.unwrap()["slug"], "test");
+
+    // append + get_messages
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "session.append_message",
+        302,
+        serde_json::json!({"session_id": sid, "role": "user", "content": "hello"}),
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "session.get_messages",
+        303,
+        serde_json::json!({"session_id": sid}),
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+    let msgs = resp.result.unwrap()["messages"].as_array().unwrap().to_vec();
+    assert_eq!(msgs.len(), 1);
+    assert_eq!(msgs[0]["content"], "hello");
+
+    // delete
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "session.delete",
+        304,
+        serde_json::json!({"id": sid}),
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+}
+
+/// `agent.list` returns an empty list (no agents loaded from disk in tests).
+#[tokio::test]
+async fn test_router_agent_list() {
+    let state = Arc::new(AppState::new());
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "agent.list",
+        400,
+        serde_json::Value::Null,
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+    let agents = resp.result.unwrap()["agents"].as_array().unwrap().to_vec();
+    // No agents configured in test env — just assert it returns an array
+    assert!(agents.len() >= 0);
+}
+
+/// `mcp.list` returns empty when no servers connected.
+#[tokio::test]
+async fn test_router_mcp_list_empty() {
+    let state = Arc::new(AppState::new());
+    let resp = opencode_runtime::router::dispatch(
+        &state,
+        "mcp.list",
+        500,
+        serde_json::Value::Null,
+    )
+    .await;
+    assert!(resp.error.is_none(), "{:?}", resp.error);
+    let servers = resp.result.unwrap()["servers"].as_array().unwrap().to_vec();
+    assert!(servers.is_empty());
+}

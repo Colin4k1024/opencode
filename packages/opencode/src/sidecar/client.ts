@@ -140,4 +140,194 @@ export class SidecarClient {
   }): Promise<{ exitCode: number; stdout: string; stderr: string }> {
     return this.call("tools.shell.exec", params)
   }
+
+  // --- File Methods ---
+
+  async fileRead(params: {
+    path: string
+    offset?: number
+    limit?: number
+  }): Promise<{ content: string; total_lines: number }> {
+    return this.call("tools.file.read", params)
+  }
+
+  async fileWrite(params: {
+    path: string
+    content: string
+  }): Promise<{ bytes_written: number }> {
+    return this.call("tools.file.write", params)
+  }
+
+  async fileEdit(params: {
+    path: string
+    old_string: string
+    new_string: string
+    replace_all?: boolean
+  }): Promise<{ replacements: number }> {
+    return this.call("tools.file.edit", params)
+  }
+
+  // --- Search Methods ---
+
+  async glob(params: {
+    pattern: string
+    path?: string
+  }): Promise<{ files: string[] }> {
+    return this.call("tools.glob", params)
+  }
+
+  async grep(params: {
+    pattern: string
+    path?: string
+    context?: number
+    max_results?: number
+  }): Promise<{ matches: Array<{ file: string; line: number; content: string }> }> {
+    return this.call("tools.grep", params)
+  }
+
+  // --- Git Methods ---
+
+  async gitStatus(cwd: string): Promise<Array<{ path: string; status: string }>> {
+    return this.call("tools.git.status", { cwd })
+  }
+
+  async gitLog(params: {
+    cwd: string
+    max_count?: number
+    since?: string
+  }): Promise<Array<{ hash: string; message: string; author: string; date: string }>> {
+    return this.call("tools.git.log", params)
+  }
+
+  async gitDiff(params: {
+    cwd: string
+    from?: string
+    to?: string
+  }): Promise<{ diff: string }> {
+    return this.call("tools.git.diff", params)
+  }
+
+  // --- Session Methods ---
+
+  async sessionCreate(params: {
+    slug?: string
+    project_id?: string
+    directory?: string
+    title?: string
+    parent_id?: string
+  }): Promise<Session> {
+    return this.call("session.create", params)
+  }
+
+  async sessionGet(id: string): Promise<Session> {
+    return this.call("session.get", { id })
+  }
+
+  async sessionList(): Promise<{ sessions: Session[] }> {
+    return this.call("session.list")
+  }
+
+  async sessionUpdateTitle(id: string, title: string): Promise<void> {
+    await this.call("session.update_title", { id, title })
+  }
+
+  async sessionDelete(id: string): Promise<void> {
+    await this.call("session.delete", { id })
+  }
+
+  async sessionAppendMessage(params: {
+    session_id: string
+    role: "user" | "assistant" | "tool"
+    content: string
+    metadata?: string
+  }): Promise<Part> {
+    return this.call("session.append_message", params)
+  }
+
+  async sessionGetMessages(session_id: string): Promise<{ messages: Part[] }> {
+    return this.call("session.get_messages", { session_id })
+  }
+
+  // --- Agent Methods ---
+
+  async agentList(): Promise<{ agents: AgentInfo[] }> {
+    return this.call("agent.list")
+  }
+
+  async agentGet(name: string): Promise<AgentInfo> {
+    return this.call("agent.get", { name })
+  }
+
+  // --- MCP Methods ---
+
+  async mcpConnect(config: {
+    name: string
+    transport: "stdio" | "sse"
+    command?: string
+    args?: string[]
+    env?: Record<string, string>
+    url?: string
+  }): Promise<{ name: string; server_info: McpServerInfo }> {
+    return this.call("mcp.connect", config)
+  }
+
+  async mcpListTools(name: string): Promise<{ tools: McpToolInfo[] }> {
+    return this.call("mcp.list_tools", { name })
+  }
+
+  async mcpCallTool(params: {
+    name: string
+    tool: string
+    params?: Record<string, unknown>
+  }): Promise<unknown> {
+    return this.call("mcp.call_tool", params)
+  }
+
+  async mcpDisconnect(name: string): Promise<void> {
+    await this.call("mcp.disconnect", { name })
+  }
+
+  async mcpList(): Promise<{ servers: string[] }> {
+    return this.call("mcp.list")
+  }
+}
+
+// ── Domain types ──────────────────────────────────────────────────────────────
+
+export interface Session {
+  id: string
+  slug: string
+  project_id: string
+  directory: string
+  title: string
+  parent_id?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Part {
+  id: string
+  session_id: string
+  role: string
+  content: string
+  metadata?: string
+  seq: number
+  created_at: string
+}
+
+export interface AgentInfo {
+  name: string
+  description: string
+  mode: "Primary" | "Subagent"
+}
+
+export interface McpServerInfo {
+  name: string
+  version: string
+}
+
+export interface McpToolInfo {
+  name: string
+  description?: string
+  input_schema?: unknown
 }
