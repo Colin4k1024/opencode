@@ -1,11 +1,14 @@
 //! RPC method router — dispatches JSON-RPC requests to handlers
 
+use opencode_protocol::frame::FrameWriter;
 use opencode_protocol::jsonrpc::{self, Response};
 use opencode_pty::{PtyManager, SpawnParams};
 use opencode_tools::{file, glob, grep, git, shell};
 use opencode_session as session;
 use opencode_agent::AgentRegistry;
 use opencode_mcp::{McpClient, McpServerConfig};
+use opencode_llm::bridge::{LlmBridge, StreamParams};
+use opencode_plugin::PluginRegistry;
 use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -18,28 +21,44 @@ pub struct AppState {
     pub db: Mutex<Connection>,
     pub agents: AgentRegistry,
     pub mcp_clients: Mutex<std::collections::HashMap<String, McpClient>>,
+    pub llm_bridge: LlmBridge,
+    pub plugins: PluginRegistry,
 }
 
 impl AppState {
     pub fn new() -> Self {
-        // In-memory SQLite for session storage (production would use a file path)
         let db_path = std::env::var("OPENCODE_DB_PATH")
             .unwrap_or_else(|_| ":memory:".to_string());
         let db = session::init_db(&db_path).expect("failed to init session db");
 
-        let agents = AgentRegistry::new();
+        // Load plugins from OPENCODE_PLUGINS_DIR if set
+        let plugins = std::env::var("OPENCODE_PLUGINS_DIR")
+            .ok()
+            .and_then(|dir| PluginRegistry::load_from_dir(&dir).ok())
+            .unwrap_or_default();
 
         Self {
             pty_manager: PtyManager::new(),
             db: Mutex::new(db),
-            agents,
+            agents: AgentRegistry::new(),
             mcp_clients: Mutex::new(std::collections::HashMap::new()),
+            llm_bridge: LlmBridge::new(),
+            plugins,
         }
     }
 }
 
-/// Dispatch a JSON-RPC request to the appropriate handler
-pub async fn dispatch(state: &Arc<AppState>, method: &str, id: i64, params: Value) -> Response {
+/// Dispatch a JSON-RPC request to the appropriate handler.
+///
+/// `writer` is used only by streaming methods (`llm.stream`) to push
+/// `FRAME_MSGPACK` events back asynchronously after the initial response.
+pub async fn dispatch(
+    state: &Arc<AppState>,
+    writer: &FrameWriter,
+    method: &str,
+    id: i64,
+    params: Value,
+) -> Response {
     match method {
         // ── System ────────────────────────────────────────────────────────────
         "system.ping" => Response::success(id, serde_json::json!({"pong": true})),
@@ -91,6 +110,14 @@ pub async fn dispatch(state: &Arc<AppState>, method: &str, id: i64, params: Valu
         "mcp.call_tool"  => handle_mcp_call_tool(state, id, params).await,
         "mcp.disconnect" => handle_mcp_disconnect(state, id, params).await,
         "mcp.list"       => handle_mcp_list(state, id).await,
+
+        // ── LLM streaming ─────────────────────────────────────────────────────
+        "llm.stream" => handle_llm_stream(state, writer, id, params).await,
+        "llm.cancel" => handle_llm_cancel(state, id, params).await,
+
+        // ── Plugin ────────────────────────────────────────────────────────────
+        "plugin.list" => handle_plugin_list(state, id).await,
+        "plugin.get"  => handle_plugin_get(state, id, params).await,
 
         _ => Response::method_not_found(id),
     }
@@ -461,4 +488,79 @@ async fn handle_mcp_list(state: &Arc<AppState>, id: i64) -> Response {
     let clients = state.mcp_clients.lock().await;
     let names: Vec<&str> = clients.keys().map(|s| s.as_str()).collect();
     Response::success(id, serde_json::json!({"servers": names}))
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LLM streaming handlers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// `llm.stream` — start an LLM generation stream.
+///
+/// Returns `{stream_id}` immediately. Events are pushed as `FRAME_MSGPACK`
+/// frames on the same connection until the stream completes or is cancelled.
+async fn handle_llm_stream(
+    state: &Arc<AppState>,
+    writer: &FrameWriter,
+    id: i64,
+    params: Value,
+) -> Response {
+    let stream_params: StreamParams = match serde_json::from_value(params) {
+        Ok(p) => p,
+        Err(e) => return Response::invalid_params(id, e.to_string()),
+    };
+
+    let (stream_id, mut rx) = match state.llm_bridge.start_stream(stream_params).await {
+        Ok(pair) => pair,
+        Err(e) => return Response::error(id, jsonrpc::ERR_TOOL_FAILED, e.to_string()),
+    };
+
+    // Spawn a forwarder task that pushes FRAME_MSGPACK events back to the client
+    let writer_clone = writer.clone();
+    let sid_clone = stream_id.clone();
+    let bridge = state.llm_bridge.clone_arc();
+    tokio::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            if let Err(e) = writer_clone.write_msgpack_event(&event).await {
+                tracing::warn!(stream_id = %sid_clone, error = %e, "stream write failed");
+                break;
+            }
+        }
+        bridge.remove_stream(&sid_clone).await;
+    });
+
+    Response::success(id, serde_json::json!({"stream_id": stream_id}))
+}
+
+/// `llm.cancel` — cancel a running stream by ID.
+async fn handle_llm_cancel(state: &Arc<AppState>, id: i64, params: Value) -> Response {
+    let stream_id = match params.get("stream_id").and_then(|v| v.as_str()) {
+        Some(s) => s.to_string(),
+        None => return Response::invalid_params(id, "missing stream_id".to_string()),
+    };
+    let cancelled = state.llm_bridge.cancel_stream(&stream_id).await;
+    Response::success(id, serde_json::json!({"cancelled": cancelled}))
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Plugin handlers
+// ─────────────────────────────────────────────────────────────────────────────
+
+async fn handle_plugin_list(state: &Arc<AppState>, id: i64) -> Response {
+    let plugins = state.plugins.list();
+    Response::success(id, serde_json::json!({"plugins": plugins}))
+}
+
+async fn handle_plugin_get(state: &Arc<AppState>, id: i64, params: Value) -> Response {
+    let name = match params.get("name").and_then(|v| v.as_str()) {
+        Some(s) => s,
+        None => return Response::invalid_params(id, "missing name".to_string()),
+    };
+    match state.plugins.get(name) {
+        Some(plugin) => Response::success(id, serde_json::to_value(plugin).unwrap_or_default()),
+        None => Response::error(
+            id,
+            jsonrpc::ERR_SESSION_NOT_FOUND,
+            format!("plugin '{name}' not found"),
+        ),
+    }
 }

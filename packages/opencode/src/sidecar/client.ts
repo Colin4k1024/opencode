@@ -290,6 +290,32 @@ export class SidecarClient {
   async mcpList(): Promise<{ servers: string[] }> {
     return this.call("mcp.list")
   }
+
+  // --- LLM Streaming Methods ---
+
+  /**
+   * Start an LLM generation stream.
+   * Returns `{stream_id}`. Events arrive as FRAME_MSGPACK frames via the
+   * `onStreamEvent` callback registered on the client.
+   */
+  async llmStream(params: LlmStreamParams): Promise<{ stream_id: string }> {
+    return this.call("llm.stream", params as unknown as Record<string, unknown>)
+  }
+
+  /** Cancel a running stream. Returns `{cancelled: boolean}`. */
+  async llmCancel(stream_id: string): Promise<{ cancelled: boolean }> {
+    return this.call("llm.cancel", { stream_id })
+  }
+
+  // --- Plugin Methods ---
+
+  async pluginList(): Promise<{ plugins: PluginInfo[] }> {
+    return this.call("plugin.list")
+  }
+
+  async pluginGet(name: string): Promise<PluginInfo> {
+    return this.call("plugin.get", { name })
+  }
 }
 
 // ── Domain types ──────────────────────────────────────────────────────────────
@@ -331,3 +357,33 @@ export interface McpToolInfo {
   description?: string
   input_schema?: unknown
 }
+
+export interface PluginInfo {
+  name: string
+  version: string
+  description: string
+  entry_point: string
+  permissions: string[]
+}
+
+export interface LlmStreamParams {
+  provider: "anthropic" | "open-ai" | "google" | "amazon-bedrock" | "azure" | "deep-seek" | "x-ai" | "ollama" | "open-ai-compatible"
+  model: string
+  messages: Array<{ role: string; content: string }>
+  system?: string
+  api_key?: string
+  base_url?: string
+  max_tokens?: number
+  temperature?: number
+  top_p?: number
+}
+
+export type StreamEvent =
+  | { type: "token"; data: { text: string }; stream_id: string; seq: number }
+  | { type: "tool_call_start"; data: { id: string; name: string }; stream_id: string; seq: number }
+  | { type: "tool_call_delta"; data: { id: string; args_delta: string }; stream_id: string; seq: number }
+  | { type: "tool_call_end"; data: { id: string }; stream_id: string; seq: number }
+  | { type: "tool_result"; data: { id: string; result: unknown }; stream_id: string; seq: number }
+  | { type: "usage"; data: { input_tokens: number; output_tokens: number; cache_read?: number; cache_write?: number }; stream_id: string; seq: number }
+  | { type: "error"; data: { code: number; message: string }; stream_id: string; seq: number }
+  | { type: "done"; data: { finish_reason: string }; stream_id: string; seq: number }

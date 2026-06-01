@@ -56,7 +56,7 @@ pub async fn handle_connection(
             FRAME_JSONRPC => {
                 let request: Request = serde_json::from_slice(&frame.payload)?;
                 let response =
-                    router::dispatch(&state, &request.method, request.id, request.params).await;
+                    router::dispatch(&state, &frame_writer, &request.method, request.id, request.params).await;
                 frame_writer.write_jsonrpc(&response).await?;
             }
             FRAME_SHUTDOWN => {

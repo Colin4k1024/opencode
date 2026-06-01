@@ -40,6 +40,7 @@ impl FrameReader {
 }
 
 /// Writes frames to a Unix socket
+#[derive(Clone)]
 pub struct FrameWriter {
     writer: Arc<Mutex<OwnedWriteHalf>>,
 }

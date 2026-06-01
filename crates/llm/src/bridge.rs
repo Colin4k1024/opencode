@@ -63,6 +63,13 @@ impl LlmBridge {
     pub async fn remove_stream(&self, stream_id: &str) {
         self.streams.write().await.remove(stream_id);
     }
+
+    /// Return a cheap clone backed by the same shared state (Arc).
+    pub fn clone_arc(&self) -> Self {
+        Self {
+            streams: Arc::clone(&self.streams),
+        }
+    }
 }
 
 impl Default for LlmBridge {

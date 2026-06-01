@@ -9,7 +9,6 @@ use futures::StreamExt;
 use opencode_protocol::stream_event::{Event, StreamEvent};
 use oris_runtime::language_models::llm::LLM;
 use oris_runtime::schemas::Message;
-use std::sync::Arc;
 use tokio::sync::{mpsc, watch};
 use tracing::{error, info};
 
