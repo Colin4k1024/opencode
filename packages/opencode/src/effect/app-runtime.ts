@@ -3,6 +3,7 @@ import { attach } from "./run-service"
 import * as Observability from "@opencode-ai/core/effect/observability"
 
 import { AppFileSystem } from "@opencode-ai/core/filesystem"
+import * as SidecarRipgrep from "@/sidecar/ripgrep"
 import { Bus } from "@/bus"
 import { Auth } from "@/auth"
 import { Account } from "@/account/account"
@@ -67,7 +68,7 @@ export const AppLayer = Layer.mergeAll(
   Account.defaultLayer,
   Config.defaultLayer,
   Git.defaultLayer,
-  Ripgrep.defaultLayer,
+  SidecarRipgrep.withFallback(Ripgrep.defaultLayer),
   File.defaultLayer,
   FileWatcher.defaultLayer,
   Storage.defaultLayer,

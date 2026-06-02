@@ -77,6 +77,9 @@ pub async fn dispatch(
         // ── Tools: Shell ──────────────────────────────────────────────────────
         "tools.shell.exec" => handle_shell_exec(id, params).await,
 
+        // ── Process (direct execution, no shell wrapper) ─────────────────────
+        "process.run" => handle_process_run(id, params).await,
+
         // ── Tools: File ───────────────────────────────────────────────────────
         "tools.file.read"  => handle_file_read(id, params).await,
         "tools.file.write" => handle_file_write(id, params).await,
@@ -180,6 +183,25 @@ async fn handle_shell_exec(id: i64, params: Value) -> Response {
         Err(e) => return Response::invalid_params(id, e.to_string()),
     };
     match shell::exec(exec_params).await {
+        Ok(r) => Response::success(id, serde_json::json!({
+            "exitCode": r.exit_code,
+            "stdout":   r.stdout,
+            "stderr":   r.stderr,
+        })),
+        Err(e) => Response::error(id, jsonrpc::ERR_TOOL_FAILED, e.to_string()),
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Process handler (direct execution)
+// ─────────────────────────────────────────────────────────────────────────────
+
+async fn handle_process_run(id: i64, params: Value) -> Response {
+    let run_params: shell::ProcessRunParams = match serde_json::from_value(params) {
+        Ok(p) => p,
+        Err(e) => return Response::invalid_params(id, e.to_string()),
+    };
+    match shell::process_run(run_params).await {
         Ok(r) => Response::success(id, serde_json::json!({
             "exitCode": r.exit_code,
             "stdout":   r.stdout,

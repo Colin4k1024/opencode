@@ -8,6 +8,7 @@ import { assertExternalDirectoryEffect } from "./external-directory"
 import DESCRIPTION from "./grep.txt"
 import * as Tool from "./tool"
 import { Reference } from "@/reference/reference"
+import { shadowCompareGrep } from "@/sidecar/shadow"
 
 const MAX_LINE_LENGTH = 2000
 
@@ -76,6 +77,10 @@ export const GrepTool = Tool.define(
             file,
             signal: ctx.abort,
           })
+
+          // Shadow-mode: fire background sidecar comparison
+          shadowCompareGrep({ pattern: params.pattern, cwd, nativeCount: result.items.length })
+
           if (result.items.length === 0) return empty
 
           const rows = result.items.map((item) => ({

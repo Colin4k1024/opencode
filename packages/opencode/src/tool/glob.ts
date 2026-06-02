@@ -8,6 +8,7 @@ import { assertExternalDirectoryEffect } from "./external-directory"
 import DESCRIPTION from "./glob.txt"
 import * as Tool from "./tool"
 import { Reference } from "@/reference/reference"
+import { shadowCompareGlob } from "@/sidecar/shadow"
 
 export const Parameters = Schema.Struct({
   pattern: Schema.String.annotate({ description: "The glob pattern to match files against" }),
@@ -76,6 +77,9 @@ export const GlobTool = Tool.define(
             files.length = limit
           }
           files.sort((a, b) => b.mtime - a.mtime)
+
+          // Shadow-mode: fire background sidecar comparison
+          shadowCompareGlob({ pattern: params.pattern, cwd: search, nativeCount: files.length })
 
           const output = []
           if (files.length === 0) output.push("No files found")

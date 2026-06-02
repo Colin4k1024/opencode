@@ -48,7 +48,7 @@ export interface SidecarState {
  *  4. Current working directory
  *  5. Fall through to PATH lookup
  */
-function getSidecarBinaryPath(): string {
+export function getSidecarBinaryPath(): string {
   const platform = process.platform
 
   const binaryName = platform === "win32" ? "opencode-sidecar.exe" : "opencode-sidecar"

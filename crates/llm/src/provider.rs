@@ -67,27 +67,16 @@ pub fn create_provider(config: &ProviderConfig) -> Result<Box<dyn LLM>, LlmError
             Ok(Box::new(client))
         }
         ProviderKind::Google => {
-            #[cfg(feature = "gemini")]
-            {
-                let client = oris_llm::Gemini::new()
-                    .with_model(&config.model)
-                    .with_api_key(&api_key)
-                    .with_options(options);
-                Ok(Box::new(client))
-            }
-            #[cfg(not(feature = "gemini"))]
-            Err(LlmError::ProviderNotConfigured("gemini feature not enabled".into()))
+            let client = oris_llm::Gemini::new()
+                .with_model(&config.model)
+                .with_api_key(&api_key)
+                .with_options(options);
+            Ok(Box::new(client))
         }
         ProviderKind::AmazonBedrock => {
-            #[cfg(feature = "bedrock")]
-            {
-                let client = oris_llm::Bedrock::new()
-                    .with_model(&config.model)
-                    .with_options(options);
-                Ok(Box::new(client))
-            }
-            #[cfg(not(feature = "bedrock"))]
-            Err(LlmError::ProviderNotConfigured("bedrock feature not enabled".into()))
+            Err(LlmError::ProviderNotConfigured(
+                "bedrock requires async initialization — use create_provider_async".into(),
+            ))
         }
         ProviderKind::DeepSeek => {
             let client = oris_llm::Deepseek::new()
@@ -97,14 +86,9 @@ pub fn create_provider(config: &ProviderConfig) -> Result<Box<dyn LLM>, LlmError
             Ok(Box::new(client))
         }
         ProviderKind::Ollama => {
-            #[cfg(feature = "ollama")]
-            {
-                let client = oris_llm::Ollama::default()
-                    .with_model(&config.model);
-                Ok(Box::new(client))
-            }
-            #[cfg(not(feature = "ollama"))]
-            Err(LlmError::ProviderNotConfigured("ollama feature not enabled".into()))
+            let client = oris_llm::Ollama::default()
+                .with_model(&config.model);
+            Ok(Box::new(client))
         }
     }
 }

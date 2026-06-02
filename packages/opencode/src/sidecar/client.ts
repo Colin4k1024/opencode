@@ -203,8 +203,22 @@ export class SidecarClient {
     cwd: string
     from?: string
     to?: string
-  }): Promise<{ diff: string }> {
+  }): Promise<string> {
     return this.call("tools.git.diff", params)
+  }
+
+  // --- Process Methods ---
+
+  async processRun(params: {
+    command: string
+    args?: string[]
+    cwd?: string
+    env?: Array<[string, string]>
+    stdin?: string
+    timeout_ms?: number
+    max_output_bytes?: number
+  }): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    return this.call("process.run", params)
   }
 
   // --- Session Methods ---

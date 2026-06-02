@@ -71,4 +71,21 @@ export const Flag = {
   get OPENCODE_CLIENT() {
     return process.env["OPENCODE_CLIENT"] ?? "cli"
   },
+
+  // Rust sidecar feature flags
+  get OPENCODE_RUST_SIDECAR() {
+    return truthy("OPENCODE_RUST_SIDECAR")
+  },
+  get OPENCODE_RUST_SHADOW() {
+    return truthy("OPENCODE_RUST_SHADOW")
+  },
+  get OPENCODE_RUST_PTY() {
+    return truthy("OPENCODE_RUST_PTY") || truthy("OPENCODE_RUST_SIDECAR")
+  },
+  get OPENCODE_RUST_TOOLS() {
+    return truthy("OPENCODE_RUST_TOOLS") || truthy("OPENCODE_RUST_SIDECAR")
+  },
+  get OPENCODE_RUST_LLM() {
+    return truthy("OPENCODE_RUST_LLM") || truthy("OPENCODE_RUST_SIDECAR")
+  },
 }
