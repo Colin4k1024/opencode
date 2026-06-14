@@ -55,7 +55,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 
 void initI18n()
 
-const deepLinkEvent = "opencode:deep-link"
+const deepLinkEvent = "cangming:deep-link"
 
 const emitDeepLinks = (urls: string[]) => {
   if (urls.length === 0) return

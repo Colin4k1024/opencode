@@ -102,7 +102,7 @@ export function make(input: {
         "terminal-auth": {
           command: "opencode",
           args: ["auth", "login"],
-          label: "OpenCode Login",
+          label: "Cangming Login",
         },
       }
     }
@@ -128,7 +128,7 @@ export function make(input: {
       },
       authMethods: [authMethod],
       agentInfo: {
-        name: "OpenCode",
+        name: "Cangming",
         version: InstallationVersion,
       },
     }
@@ -1024,7 +1024,7 @@ function fromUnknownError(error: unknown, service?: string): Error {
   if (isAuthRequired(error)) {
     return new ACPNextError.AuthRequiredError({ providerId: findProviderID(error) })
   }
-  return new ACPNextError.ServiceFailureError({ safeMessage: "OpenCode service failure", service })
+  return new ACPNextError.ServiceFailureError({ safeMessage: "Cangming service failure", service })
 }
 
 function isACPNextError(error: unknown): error is Error {
