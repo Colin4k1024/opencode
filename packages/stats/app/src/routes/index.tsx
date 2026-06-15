@@ -70,8 +70,8 @@ export default function StatsHome() {
 
   return (
     <main data-page="stats">
-      <Title>OpenCode Stats</Title>
-      <Meta name="description" content="OpenCode usage, market share, token cost, and session cost stats." />
+      <Title>Cangming Stats</Title>
+      <Meta name="description" content="Cangming usage, market share, token cost, and session cost stats." />
       <Link rel="preload" href={ibmPlexMonoRegularLatin1} as="font" type="font/woff2" crossorigin="anonymous" />
       <Link rel="preload" href={ibmPlexMonoMediumLatin1} as="font" type="font/woff2" crossorigin="anonymous" />
       <Link rel="preload" href={ibmPlexMonoSemiBoldLatin1} as="font" type="font/woff2" crossorigin="anonymous" />
@@ -305,7 +305,7 @@ function TopModelsSection(props: { data: StatsHomeData["usage"] }) {
   return (
     <section id="top-models" data-section="top-models">
       <h2 data-slot="top-models-title">
-        <strong>Top models.</strong> <span>Usage of models across OpenCode.</span>
+        <strong>Top models.</strong> <span>Usage of models across Cangming.</span>
       </h2>
       <div data-slot="top-models-mobile-controls">
         <MobileFilterButton
@@ -1239,7 +1239,7 @@ function Header() {
             <span>[150K]</span>
           </a>
           <a data-slot="header-button" data-variant="contrast" href="https://opencode.ai/">
-            <strong>Try OpenCode</strong>
+            <strong>Try Cangming</strong>
           </a>
           <button
             data-slot="menu-button"
@@ -1354,7 +1354,7 @@ function Footer() {
     <footer data-component="footer">
       <SectionBridge label="SESSION COST" href="#session-cost" />
       <div data-slot="footer-grid">
-        <a data-slot="footer-mark" href="https://opencode.ai" aria-label="OpenCode home">
+        <a data-slot="footer-mark" href="https://opencode.ai" aria-label="Cangming home">
           <OpenCodeMark />
         </a>
         <FooterColumn title="Model Stats" links={modelStats} />
@@ -1422,7 +1422,7 @@ function SubscribeModal(props: { onClose: () => void }) {
         </div>
         <div data-slot="modal-body">
           <div data-slot="modal-intro">
-            <h2 id="subscribe-title">OpenCode Newsletter</h2>
+            <h2 id="subscribe-title">Cangming Newsletter</h2>
             <p>
               Be the first to know
               <br />

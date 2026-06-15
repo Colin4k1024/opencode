@@ -507,7 +507,7 @@ export class Agent implements ACPAgent {
 
     const authMethod: AuthMethod = {
       description: "Run `opencode auth login` in the terminal",
-      name: "Login with opencode",
+      name: "Login with Cangming",
       id: "opencode-login",
     }
 
