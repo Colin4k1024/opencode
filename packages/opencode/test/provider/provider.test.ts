@@ -1117,7 +1117,7 @@ it.instance(
     expect(providers[ProviderID.make("nvidia")].options.headers).toEqual({
       "HTTP-Referer": "https://opencode.ai/",
       "X-Title": "opencode",
-      "X-BILLING-INVOKE-ORIGIN": "OpenCode",
+      "X-BILLING-INVOKE-ORIGIN": "Cangming",
     })
   }),
   { config: { provider: { nvidia: { options: { apiKey: "test-api-key" } } } } },
@@ -1130,7 +1130,7 @@ it.instance(
     expect(providers[ProviderID.make("nvidia")].options.headers).toEqual({
       "HTTP-Referer": "https://opencode.ai/",
       "X-Title": "opencode",
-      "X-BILLING-INVOKE-ORIGIN": "OpenCode",
+      "X-BILLING-INVOKE-ORIGIN": "Cangming",
     })
   }),
   { config: { provider: { nvidia: { options: { apiKey: "test-api-key", baseURL: "http://localhost:8000/v1" } } } } },

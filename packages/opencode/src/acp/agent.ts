@@ -543,7 +543,7 @@ export class Agent implements ACPAgent {
       },
       authMethods: [authMethod],
       agentInfo: {
-        name: "OpenCode",
+        name: "Cangming",
         version: InstallationVersion,
       },
     }
