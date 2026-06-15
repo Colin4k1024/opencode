@@ -1584,6 +1584,17 @@ export const layer = Layer.effect(
 
       const templateParts = yield* resolvePromptParts(template)
       const isSubtask = (agent.mode === "subagent" && cmd.subtask !== false) || cmd.subtask === true
+
+      // For skill/command sources: mark template content as synthetic (hidden from TUI)
+      // Content still reaches the LLM but won't render in the user message area
+      const shouldHideTemplate = cmd.source === "skill" || cmd.source === "command"
+      const visibleParts = shouldHideTemplate
+        ? [
+            { type: "text" as const, text: `/${input.command}${input.arguments.trim() ? " " + input.arguments.trim() : ""}` },
+            ...templateParts.map((p: any) => (p.type === "text" ? { ...p, synthetic: true } : p)),
+          ]
+        : templateParts
+
       const parts = isSubtask
         ? [
             {
@@ -1595,7 +1606,7 @@ export const layer = Layer.effect(
               prompt: templateParts.find((y) => y.type === "text")?.text ?? "",
             },
           ]
-        : [...templateParts, ...(input.parts ?? [])]
+        : [...visibleParts, ...(input.parts ?? [])]
 
       const userAgent = isSubtask ? (input.agent ?? (yield* agents.defaultInfo()).name) : agent.name
       const userModel = isSubtask

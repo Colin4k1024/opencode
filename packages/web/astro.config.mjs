@@ -12,7 +12,7 @@ import { spawnSync } from "child_process"
 // https://astro.build/config
 export default defineConfig({
   site: config.url,
-  base: "/docs",
+  base: process.env.NODE_ENV === "production" ? "/docs" : "",
   output: "server",
   adapter: cloudflare({
     imageService: "passthrough",
