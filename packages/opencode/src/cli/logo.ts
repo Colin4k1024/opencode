@@ -1,11 +1,1 @@
-export const logo = {
-  left: ["                   ", " ▀▀▀  ▄▄  █▄ █  ▀▀▀", "█___ ▀▀▀▀ █_▀█ █_▄▄", " ▀▀▀ █  █ █  █  ▀▀▀"],
-  right: ["▄  ▄               ", "█▄▄█ ▀██▀ █▄ █  ▀▀▀", "█  █  ██  █_▀█ █_▄▄", "█  █ ▀██▀ █  █  ▀▀▀"],
-}
-
-export const go = {
-  left: ["    ", " ▀▀▀", "█___", " ▀▀▀"],
-  right: ["    ", "▀▄▄▀", "█__█", "█  █"],
-}
-
-export const marks = "_^~,"
+export * from "@opencode-ai/tui/logo"

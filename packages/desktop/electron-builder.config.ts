@@ -6,8 +6,14 @@ import { promisify } from "node:util"
 import type { Configuration } from "electron-builder"
 
 const execFileAsync = promisify(execFile)
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
+const packageDir = path.dirname(fileURLToPath(import.meta.url))
+const rootDir = path.resolve(packageDir, "../..")
 const signScript = path.join(rootDir, "script", "sign-windows.ps1")
+// The Electron 42 packaging update briefly installed Linux launchers/icons under
+// "cangming-desktop". Keep that hidden desktop entry around so existing GNOME/KDE
+// pins still resolve after the canonical app id changes back to ai.cangming.desktop.
+const legacyDesktopEntry = path.join(packageDir, "resources", "linux", "cangming-desktop.desktop")
+const legacyDesktopEntryFpm = `${legacyDesktopEntry}=/usr/share/applications/cangming-desktop.desktop`
 
 async function signWindows(configuration: { path: string }) {
   if (process.platform !== "win32") return
@@ -26,11 +32,25 @@ const channel = (() => {
   return "dev"
 })()
 
-const getBase = (): Configuration => ({
-  artifactName: "opencode-desktop-${os}-${arch}.${ext}",
+const APP_IDS = {
+  dev: "ai.cangming.desktop.dev",
+  beta: "ai.cangming.desktop.beta",
+  prod: "ai.cangming.desktop",
+} as const
+
+const getBase = (appId: string): Configuration => ({
+  artifactName: "cangming-desktop-${os}-${arch}.${ext}",
   directories: {
     output: "dist",
     buildResources: "resources",
+  },
+  // Linux launchers are .desktop files, so this is the desktop file name,
+  // not just the app id. For prod, app id "ai.cangming.desktop" becomes
+  // "ai.cangming.desktop.desktop".
+  // https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html
+  // https://www.electron.build/docs/linux/
+  extraMetadata: {
+    desktopName: `${appId}.desktop`,
   },
   files: ["out/**/*", "resources/**/*"],
   extraResources: [
@@ -74,18 +94,27 @@ const getBase = (): Configuration => ({
   linux: {
     icon: `resources/icons`,
     category: "Development",
+    executableName: appId,
+    desktop: {
+      entry: {
+        // Match the installed .desktop file and hicolor icon basename so
+        // Linux shells can associate the running Electron window with its launcher.
+        StartupWMClass: appId,
+      },
+    },
     target: ["AppImage", "deb", "rpm"],
   },
 })
 
 function getConfig() {
-  const base = getBase()
+  const appId = APP_IDS[channel]
+  const base = getBase(appId)
 
   switch (channel) {
     case "dev": {
       return {
         ...base,
-        appId: "app.cangming.desktop.dev",
+        appId,
         productName: "Cangming Dev",
         rpm: { packageName: "cangming-dev" },
       }
@@ -93,21 +122,22 @@ function getConfig() {
     case "beta": {
       return {
         ...base,
-        appId: "app.cangming.desktop.beta",
+        appId,
         productName: "Cangming Beta",
         protocols: { name: "Cangming Beta", schemes: ["cangming"] },
-        publish: { provider: "github", owner: "anomalyco", repo: "opencode-beta", channel: "latest" },
+        publish: { provider: "github", owner: "anomalyco", repo: "cangming-beta", channel: "latest" },
         rpm: { packageName: "cangming-beta" },
       }
     }
     case "prod": {
       return {
         ...base,
-        appId: "app.cangming.desktop",
+        appId,
         productName: "Cangming",
         protocols: { name: "Cangming", schemes: ["cangming"] },
-        publish: { provider: "github", owner: "anomalyco", repo: "opencode", channel: "latest" },
-        rpm: { packageName: "cangming" },
+        publish: { provider: "github", owner: "anomalyco", repo: "cangming", channel: "latest" },
+        deb: { fpm: [legacyDesktopEntryFpm] },
+        rpm: { packageName: "cangming", fpm: [legacyDesktopEntryFpm] },
       }
     }
   }
